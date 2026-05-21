@@ -21,6 +21,7 @@ struct AddTaskSheet: View {
             Form {
                 Section {
                     TextField("What needs doing?", text: $title)
+                        .font(.headline)
                         .focused($titleFocused)
                     TextField("Notes (optional)", text: $notes, axis: .vertical)
                         .lineLimit(1...4)
@@ -42,11 +43,15 @@ struct AddTaskSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add", action: add)
+                        .fontWeight(.semibold)
                         .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
             .onAppear { titleFocused = true }
         }
+        .tint(scope.color)
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
     private func add() {

@@ -1,4 +1,4 @@
-import Foundation
+import SwiftUI
 
 enum TaskScope: String, Codable, CaseIterable, Identifiable {
     case daily
@@ -20,6 +20,16 @@ enum TaskScope: String, Codable, CaseIterable, Identifiable {
         case .daily: "sun.max"
         case .weekly: "calendar"
         case .weekend: "house"
+        }
+    }
+
+    /// Accent color for this list — Today is warm, Week is calm, Weekend is fresh.
+    /// Drives the tab bar, checkboxes, badges, and swipe actions for the scope.
+    var color: Color {
+        switch self {
+        case .daily: .orange
+        case .weekly: .blue
+        case .weekend: .green
         }
     }
 

@@ -60,7 +60,7 @@ struct TaskListView: View {
                                         } label: {
                                             Label("Move to \(other.displayName)", systemImage: other.systemImage)
                                         }
-                                        .tint(tint(for: other))
+                                        .tint(other.color)
                                     }
                                 }
                         }
@@ -73,14 +73,7 @@ struct TaskListView: View {
                                 }
                                 .onDelete(perform: deleteCompleted)
                             } label: {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(.secondary)
-                                    Text(scope.completedSectionLabel)
-                                    Text("\(completedThisScope.count)")
-                                        .foregroundStyle(.secondary)
-                                }
-                                .font(.subheadline)
+                                completedSectionLabel
                             }
                         }
                     }
@@ -113,18 +106,29 @@ struct TaskListView: View {
                 SettingsView()
             }
         }
+        .tint(scope.color)
+    }
+
+    private var completedSectionLabel: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundStyle(scope.color)
+            Text(scope.completedSectionLabel)
+                .fontWeight(.medium)
+            Spacer()
+            Text("\(completedThisScope.count)")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(scope.color)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 2)
+                .background(scope.color.opacity(0.15), in: Capsule())
+        }
+        .font(.subheadline)
     }
 
     private func otherScopes(for item: TodoItem) -> [TaskScope] {
         TaskScope.allCases.filter { $0 != item.scope }
-    }
-
-    private func tint(for scope: TaskScope) -> Color {
-        switch scope {
-        case .daily: .orange
-        case .weekly: .blue
-        case .weekend: .green
-        }
     }
 
     private func deleteOpen(at offsets: IndexSet) {

@@ -11,18 +11,22 @@ struct TaskRow: View {
     }()
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: 10) {
             Button {
                 toggleComplete()
             } label: {
                 Image(systemName: item.isComplete ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
-                    .foregroundStyle(item.isComplete ? Color.accentColor : Color.secondary)
+                    .foregroundStyle(item.isComplete ? item.scope.color : Color.secondary)
+                    .padding(.vertical, 2)
+                    .padding(.trailing, 2)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(item.title)
+                    .fontWeight(.medium)
                     .strikethrough(item.isComplete)
                     .foregroundStyle(item.isComplete ? .secondary : .primary)
                 if let notes = item.notes, !notes.isEmpty {
@@ -38,7 +42,7 @@ struct TaskRow: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 6)
         .contentShape(Rectangle())
         .contextMenu {
             Section("Move to") {
