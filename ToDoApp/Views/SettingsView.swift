@@ -72,6 +72,7 @@ struct SettingsView: View {
                 Text("This permanently removes every task and can't be undone.")
             }
         }
+        .tint(.blue)
     }
 
     private func clearAllData() {
