@@ -1,7 +1,9 @@
 import SwiftUI
+import SwiftData
 
 struct TaskRow: View {
     @Bindable var item: TodoItem
+    @Environment(\.modelContext) private var modelContext
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {
         let f = RelativeDateTimeFormatter()
@@ -11,24 +13,26 @@ struct TaskRow: View {
     }()
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .center, spacing: 10) {
             Button {
                 toggleComplete()
             } label: {
-                Image(systemName: item.isComplete ? "checkmark.circle.fill" : "circle")
+                Image(systemName: item.isComplete ? "checkmark.square.fill" : "square")
                     .font(.title2)
                     .foregroundStyle(item.isComplete ? item.scope.color : Color.secondary)
-                    .padding(.vertical, 2)
-                    .padding(.trailing, 2)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(item.title)
-                    .fontWeight(.medium)
-                    .strikethrough(item.isComplete)
-                    .foregroundStyle(item.isComplete ? .secondary : .primary)
+            VStack(alignment: .leading, spacing: 1) {
+                if item.isComplete {
+                    Text(item.title)
+                        .strikethrough()
+                        .foregroundStyle(.secondary)
+                } else {
+                    TextField("Task", text: $item.title)
+                        .onSubmit(handleTitleSubmit)
+                }
                 if let notes = item.notes, !notes.isEmpty {
                     Text(notes)
                         .font(.caption)
@@ -42,7 +46,6 @@ struct TaskRow: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(.vertical, 6)
         .contentShape(Rectangle())
         .contextMenu {
             Section("Move to") {
@@ -62,6 +65,12 @@ struct TaskRow: View {
     private func toggleComplete() {
         withAnimation {
             item.completedAt = item.isComplete ? nil : .now
+        }
+    }
+
+    private func handleTitleSubmit() {
+        if item.title.trimmingCharacters(in: .whitespaces).isEmpty {
+            modelContext.delete(item)
         }
     }
 }

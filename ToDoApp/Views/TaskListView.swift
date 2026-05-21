@@ -13,6 +13,8 @@ struct TaskListView: View {
     @State private var draftTitle = ""
     @FocusState private var addFieldFocused: Bool
 
+    private let rowInsets = EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16)
+
     private static let todayFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "EEE, MMM d"
@@ -43,8 +45,10 @@ struct TaskListView: View {
     var body: some View {
         NavigationStack {
             List {
-                ForEach(openItems) { item in
+                ForEach(Array(openItems.enumerated()), id: \.element.id) { index, item in
                     TaskRow(item: item)
+                        .listRowInsets(rowInsets)
+                        .listRowSeparator(index == 0 ? .hidden : .automatic, edges: .top)
                         .swipeActions(edge: .leading) {
                             ForEach(otherScopes(for: item)) { other in
                                 Button {
@@ -61,16 +65,20 @@ struct TaskListView: View {
                 .onDelete(perform: deleteOpen)
 
                 inlineAddRow
+                    .listRowInsets(rowInsets)
+                    .listRowSeparator(openItems.isEmpty ? .hidden : .automatic, edges: .top)
 
                 if !completedThisScope.isEmpty {
                     DisclosureGroup(isExpanded: $showCompletedSection) {
                         ForEach(completedThisScope) { item in
                             TaskRow(item: item)
+                                .listRowInsets(rowInsets)
                         }
                         .onDelete(perform: deleteCompleted)
                     } label: {
                         completedSectionLabel
                     }
+                    .listRowInsets(rowInsets)
                 }
             }
             .listStyle(.plain)
@@ -114,14 +122,13 @@ struct TaskListView: View {
                 .onSubmit { commitInline() }
             Spacer(minLength: 0)
         }
-        .padding(.vertical, 6)
         .contentShape(Rectangle())
         .onTapGesture { addFieldFocused = true }
     }
 
     private var completedSectionLabel: some View {
         HStack(spacing: 8) {
-            Image(systemName: "checkmark.circle.fill")
+            Image(systemName: "checkmark.square.fill")
                 .foregroundStyle(scope.color)
             Text(scope.completedSectionLabel)
                 .fontWeight(.medium)
