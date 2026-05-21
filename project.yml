@@ -9,6 +9,8 @@ settings:
   base:
     SWIFT_VERSION: "5.9"
     CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
 targets:
   ToDoApp:
     type: application
@@ -26,3 +28,22 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_ENTITLEMENTS: ToDoApp/ToDoApp.entitlements
+    dependencies:
+      - target: ToDoAppWidget
+        embed: true
+
+  ToDoAppWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: ToDoAppWidget
+      - path: ToDoApp/Models
+      - path: ToDoApp/Persistence/SharedAppGroup.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.chris.ToDoApp.Widget
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: ToDoAppWidget/Info.plist
+        CODE_SIGN_ENTITLEMENTS: ToDoAppWidget/ToDoAppWidget.entitlements
+        SKIP_INSTALL: YES

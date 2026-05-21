@@ -7,27 +7,71 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		10B37EFB91847FC040C2F7E6 /* ToDoAppWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9FBC06D4253FE274C3C21970 /* ToDoAppWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1811CA283A3A1DECB3D3E05F /* ToDoAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F79DFD2652191E52A8132801 /* ToDoAppApp.swift */; };
 		40A5DDD3CA0FC64F061840D0 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F82D84D7171BDE2950B437AC /* Preview Assets.xcassets */; };
+		44B934A50C32FDE17BD0D76A /* FridgeWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B76FADB4ED91C1F8723526F /* FridgeWidget.swift */; };
 		52E1BA411A011C9420F5D901 /* TaskListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A39CCD0968824AA18B4B5F /* TaskListView.swift */; };
 		5BA5A856DB6BBCBF66398860 /* TaskScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7463D7A8199BD05F4CD513 /* TaskScope.swift */; };
+		6109FEFCCDDC65CB3513418D /* SharedAppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1137D8FE07FE0F7419351E78 /* SharedAppGroup.swift */; };
 		6CB4E97BA6E3C7E27891865F /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F8167B12DB212A72CC17ACB /* RootTabView.swift */; };
 		72D0D39AA4C6B83EAD4F20A2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 888526FD9C99D628D33D6462 /* Assets.xcassets */; };
 		7E0B475545B238F8ED377958 /* TaskRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A2B3C72DC0835F149071641 /* TaskRow.swift */; };
+		82EA982DD2E0C34A87EDC2D4 /* TodoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E621D2F5DA713C77F5729DD2 /* TodoItem.swift */; };
 		842E957414F10F69FBE5E47E /* AddTaskSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A754488D87AD86D36DEC95 /* AddTaskSheet.swift */; };
+		8A7D90CACE8428752E840E58 /* FridgeWidgetEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 483276A9EEE0DEF613B13CEF /* FridgeWidgetEntry.swift */; };
+		8ED8FC204BE12F21A5CDAC1F /* WidgetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C85538781EB2B06A8793D54F /* WidgetStore.swift */; };
 		9ED3ECA0C63C86B3436E39B9 /* ModelContainer+Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CEE1C47C5432B91C474E30 /* ModelContainer+Shared.swift */; };
+		A9B0DF162A9796EA7C6A6B47 /* TaskScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7463D7A8199BD05F4CD513 /* TaskScope.swift */; };
+		BE6FDFDE3B913A239F163AF0 /* ToDoAppWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B538B038291DE230E4D0AC9 /* ToDoAppWidgetBundle.swift */; };
+		C9CE3A92053990A37055A7EA /* FridgeWidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD02AF1AC6F16853E90D0E81 /* FridgeWidgetProvider.swift */; };
+		D1C9C063B4C1D9D8B460B0F8 /* SharedAppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1137D8FE07FE0F7419351E78 /* SharedAppGroup.swift */; };
 		EFDBA73AC519929BAA639683 /* TodoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E621D2F5DA713C77F5729DD2 /* TodoItem.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		1372B8277311BD1A44616C7F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0A0BC027BCCAE1EE009D76E3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8E09C28FE0D8A4498E5B6BC5;
+			remoteInfo = ToDoAppWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		99637B7A421AACA8F728D06C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				10B37EFB91847FC040C2F7E6 /* ToDoAppWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		1137D8FE07FE0F7419351E78 /* SharedAppGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedAppGroup.swift; sourceTree = "<group>"; };
+		2B76FADB4ED91C1F8723526F /* FridgeWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FridgeWidget.swift; sourceTree = "<group>"; };
+		2C8ACFCCE6C31A619B72FFA6 /* ToDoApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ToDoApp.entitlements; sourceTree = "<group>"; };
 		2F8167B12DB212A72CC17ACB /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		317451B1B109F75D0984C702 /* ToDoApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ToDoApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B7463D7A8199BD05F4CD513 /* TaskScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskScope.swift; sourceTree = "<group>"; };
 		47A754488D87AD86D36DEC95 /* AddTaskSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTaskSheet.swift; sourceTree = "<group>"; };
+		483276A9EEE0DEF613B13CEF /* FridgeWidgetEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FridgeWidgetEntry.swift; sourceTree = "<group>"; };
 		888526FD9C99D628D33D6462 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9A2B3C72DC0835F149071641 /* TaskRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRow.swift; sourceTree = "<group>"; };
+		9B538B038291DE230E4D0AC9 /* ToDoAppWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoAppWidgetBundle.swift; sourceTree = "<group>"; };
+		9FBC06D4253FE274C3C21970 /* ToDoAppWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ToDoAppWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C85538781EB2B06A8793D54F /* WidgetStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetStore.swift; sourceTree = "<group>"; };
+		CD02AF1AC6F16853E90D0E81 /* FridgeWidgetProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FridgeWidgetProvider.swift; sourceTree = "<group>"; };
+		D67AC9478869A5F66E5BEFED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E4CEE1C47C5432B91C474E30 /* ModelContainer+Shared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelContainer+Shared.swift"; sourceTree = "<group>"; };
 		E621D2F5DA713C77F5729DD2 /* TodoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItem.swift; sourceTree = "<group>"; };
+		EB0A090424804350D2F84C1C /* ToDoAppWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ToDoAppWidget.entitlements; sourceTree = "<group>"; };
 		F79DFD2652191E52A8132801 /* ToDoAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoAppApp.swift; sourceTree = "<group>"; };
 		F82D84D7171BDE2950B437AC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		F8A39CCD0968824AA18B4B5F /* TaskListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListView.swift; sourceTree = "<group>"; };
@@ -38,6 +82,7 @@
 			isa = PBXGroup;
 			children = (
 				E4CEE1C47C5432B91C474E30 /* ModelContainer+Shared.swift */,
+				1137D8FE07FE0F7419351E78 /* SharedAppGroup.swift */,
 			);
 			path = Persistence;
 			sourceTree = "<group>";
@@ -46,6 +91,7 @@
 			isa = PBXGroup;
 			children = (
 				888526FD9C99D628D33D6462 /* Assets.xcassets */,
+				2C8ACFCCE6C31A619B72FFA6 /* ToDoApp.entitlements */,
 				F79DFD2652191E52A8132801 /* ToDoAppApp.swift */,
 				6A15470FA35F216053463EF5 /* Models */,
 				1CBABD74A524730ADEFF27A9 /* Persistence */,
@@ -76,6 +122,7 @@
 			isa = PBXGroup;
 			children = (
 				21C0CBCA88A9F9AFBB7B813E /* ToDoApp */,
+				F976C38DAE3EAD817B203EA7 /* ToDoAppWidget */,
 				A3BE8DBA8C4431A9592E8745 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -84,6 +131,7 @@
 			isa = PBXGroup;
 			children = (
 				317451B1B109F75D0984C702 /* ToDoApp.app */,
+				9FBC06D4253FE274C3C21970 /* ToDoAppWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -99,19 +147,52 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		F976C38DAE3EAD817B203EA7 /* ToDoAppWidget */ = {
+			isa = PBXGroup;
+			children = (
+				2B76FADB4ED91C1F8723526F /* FridgeWidget.swift */,
+				483276A9EEE0DEF613B13CEF /* FridgeWidgetEntry.swift */,
+				CD02AF1AC6F16853E90D0E81 /* FridgeWidgetProvider.swift */,
+				D67AC9478869A5F66E5BEFED /* Info.plist */,
+				EB0A090424804350D2F84C1C /* ToDoAppWidget.entitlements */,
+				9B538B038291DE230E4D0AC9 /* ToDoAppWidgetBundle.swift */,
+				C85538781EB2B06A8793D54F /* WidgetStore.swift */,
+			);
+			path = ToDoAppWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		8E09C28FE0D8A4498E5B6BC5 /* ToDoAppWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A590BE16CE43A20981637B7C /* Build configuration list for PBXNativeTarget "ToDoAppWidget" */;
+			buildPhases = (
+				E2085796123ACE24C2DAE88B /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ToDoAppWidget;
+			packageProductDependencies = (
+			);
+			productName = ToDoAppWidget;
+			productReference = 9FBC06D4253FE274C3C21970 /* ToDoAppWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		CF2401504C8D92D3E87011FA /* ToDoApp */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D28A0C60896361EFEF3C372B /* Build configuration list for PBXNativeTarget "ToDoApp" */;
 			buildPhases = (
 				EB5A6DA8997E99A7EAC4C6B5 /* Sources */,
 				9DD1B102EEA7A67B35499648 /* Resources */,
+				99637B7A421AACA8F728D06C /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				55744734805956F03E63285F /* PBXTargetDependency */,
 			);
 			name = ToDoApp;
 			packageProductDependencies = (
@@ -129,6 +210,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					8E09C28FE0D8A4498E5B6BC5 = {
+						ProvisioningStyle = Automatic;
+					};
 					CF2401504C8D92D3E87011FA = {
 						ProvisioningStyle = Automatic;
 					};
@@ -149,6 +233,7 @@
 			projectRoot = "";
 			targets = (
 				CF2401504C8D92D3E87011FA /* ToDoApp */,
+				8E09C28FE0D8A4498E5B6BC5 /* ToDoAppWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -166,6 +251,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		E2085796123ACE24C2DAE88B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				44B934A50C32FDE17BD0D76A /* FridgeWidget.swift in Sources */,
+				8A7D90CACE8428752E840E58 /* FridgeWidgetEntry.swift in Sources */,
+				C9CE3A92053990A37055A7EA /* FridgeWidgetProvider.swift in Sources */,
+				6109FEFCCDDC65CB3513418D /* SharedAppGroup.swift in Sources */,
+				A9B0DF162A9796EA7C6A6B47 /* TaskScope.swift in Sources */,
+				BE6FDFDE3B913A239F163AF0 /* ToDoAppWidgetBundle.swift in Sources */,
+				82EA982DD2E0C34A87EDC2D4 /* TodoItem.swift in Sources */,
+				8ED8FC204BE12F21A5CDAC1F /* WidgetStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EB5A6DA8997E99A7EAC4C6B5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -173,6 +273,7 @@
 				842E957414F10F69FBE5E47E /* AddTaskSheet.swift in Sources */,
 				9ED3ECA0C63C86B3436E39B9 /* ModelContainer+Shared.swift in Sources */,
 				6CB4E97BA6E3C7E27891865F /* RootTabView.swift in Sources */,
+				D1C9C063B4C1D9D8B460B0F8 /* SharedAppGroup.swift in Sources */,
 				52E1BA411A011C9420F5D901 /* TaskListView.swift in Sources */,
 				7E0B475545B238F8ED377958 /* TaskRow.swift in Sources */,
 				5BA5A856DB6BBCBF66398860 /* TaskScope.swift in Sources */,
@@ -182,6 +283,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		55744734805956F03E63285F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8E09C28FE0D8A4498E5B6BC5 /* ToDoAppWidget */;
+			targetProxy = 1372B8277311BD1A44616C7F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		0E2137C6AD50590F51CBC28F /* Release */ = {
@@ -219,6 +328,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -231,6 +341,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -246,6 +357,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ToDoApp/ToDoApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_ASSET_PATHS = "\"ToDoApp/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
@@ -297,6 +409,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -315,6 +428,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -326,11 +440,48 @@
 			};
 			name = Debug;
 		};
+		9463727A8A1F5306ECC74EF8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ToDoAppWidget/ToDoAppWidget.entitlements;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ToDoAppWidget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chris.ToDoApp.Widget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C2E68550C070151481BF5ACA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ToDoAppWidget/ToDoAppWidget.entitlements;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ToDoAppWidget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chris.ToDoApp.Widget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		C64C03E9BD4339DBB993360B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ToDoApp/ToDoApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_ASSET_PATHS = "\"ToDoApp/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
@@ -355,6 +506,15 @@
 			buildConfigurations = (
 				69BF24E2113080ED3578F05B /* Debug */,
 				0E2137C6AD50590F51CBC28F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A590BE16CE43A20981637B7C /* Build configuration list for PBXNativeTarget "ToDoAppWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9463727A8A1F5306ECC74EF8 /* Debug */,
+				C2E68550C070151481BF5ACA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
