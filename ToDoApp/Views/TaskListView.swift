@@ -8,7 +8,6 @@ struct TaskListView: View {
     @Environment(\.editMode) private var editMode
     @Query(sort: [SortDescriptor(\TodoItem.sortOrder), SortDescriptor(\TodoItem.createdAt)])
     private var allItems: [TodoItem]
-    @State private var showingAddSheet = false
     @State private var showingSettings = false
     @State private var showCompletedSection = false
     @State private var draftTitle = ""
@@ -92,7 +91,7 @@ struct TaskListView: View {
             .listStyle(.plain)
             .navigationTitle(navigationTitleText)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showingSettings = true
                     } label: {
@@ -103,19 +102,6 @@ struct TaskListView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     EditButton()
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    if !isEditing {
-                        Button {
-                            showingAddSheet = true
-                        } label: {
-                            Image(systemName: "square.and.pencil")
-                        }
-                        .accessibilityLabel("Add task with details")
-                    }
-                }
-            }
-            .sheet(isPresented: $showingAddSheet) {
-                AddTaskSheet(defaultScope: scope)
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()

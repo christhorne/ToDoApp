@@ -72,8 +72,8 @@ ToDoApp/
     ModelContainer+Shared.swift on-disk container, CloudKit toggle
   Views/
     RootTabView.swift           three-tab shell
-    TaskListView.swift          reusable list keyed by TaskScope
-    TaskRow.swift               row with completion + context menu
-    AddTaskSheet.swift          new-task form with scope picker
+    TaskListView.swift          reusable list keyed by TaskScope; inline add
+    TaskRow.swift               row with completion + editable title
+    SettingsView.swift          settings sheet + share scaffold
 ToDoAppWidget/                  (Checkpoint F — Home Screen / Lock / StandBy)
 ```
