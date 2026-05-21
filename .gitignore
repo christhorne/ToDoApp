@@ -1,0 +1,40 @@
+# macOS
+.DS_Store
+
+# Claude Code local artifacts
+.agents/
+skills-lock.json
+
+# Xcode
+build/
+DerivedData/
+*.xcuserdata/
+*.xcuserstate
+xcuserdata/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Generated project (xcodegen regenerates from project.yml)
+# Comment out the next line if you want to commit the xcodeproj instead.
+# ToDoApp.xcodeproj/
+
+# Swift Package Manager
+.build/
+Packages/
+Package.resolved
+.swiftpm/
+
+# CocoaPods (not used, here for safety)
+Pods/
+
+# Carthage (not used, here for safety)
+Carthage/Build/
+
+# fastlane (not used, here for safety)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
