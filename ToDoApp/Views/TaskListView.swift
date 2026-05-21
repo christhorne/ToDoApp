@@ -26,6 +26,18 @@ struct TaskListView: View {
                     List {
                         ForEach(items) { item in
                             TaskRow(item: item)
+                                .swipeActions(edge: .leading) {
+                                    ForEach(otherScopes(for: item)) { other in
+                                        Button {
+                                            withAnimation {
+                                                item.scope = other
+                                            }
+                                        } label: {
+                                            Label("Move to \(other.displayName)", systemImage: other.systemImage)
+                                        }
+                                        .tint(tint(for: other))
+                                    }
+                                }
                         }
                         .onDelete(perform: delete)
                     }
@@ -46,6 +58,18 @@ struct TaskListView: View {
             .sheet(isPresented: $showingAddSheet) {
                 AddTaskSheet(defaultScope: scope)
             }
+        }
+    }
+
+    private func otherScopes(for item: TodoItem) -> [TaskScope] {
+        TaskScope.allCases.filter { $0 != item.scope }
+    }
+
+    private func tint(for scope: TaskScope) -> Color {
+        switch scope {
+        case .daily: .orange
+        case .weekly: .blue
+        case .weekend: .green
         }
     }
 
