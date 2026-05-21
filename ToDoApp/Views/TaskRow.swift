@@ -19,7 +19,7 @@ struct TaskRow: View {
             } label: {
                 Image(systemName: item.isComplete ? "checkmark.square.fill" : "square")
                     .font(.title2)
-                    .foregroundStyle(item.isComplete ? item.scope.color : Color.secondary)
+                    .foregroundStyle(item.isComplete ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

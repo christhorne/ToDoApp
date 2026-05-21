@@ -1,6 +1,8 @@
 import SwiftUI
 
-enum TaskScope: String, Codable, CaseIterable, Identifiable {
+/// Identifies one of the three planner tabs. Not stored on tasks — tasks
+/// carry a `day`, and each scope is a window onto those dated tasks.
+enum TaskScope: String, CaseIterable, Identifiable {
     case daily
     case weekly
     case weekend
@@ -23,34 +25,12 @@ enum TaskScope: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    /// Accent color for this list — Today is warm, Week is calm, Weekend is fresh.
-    /// Drives the tab bar, checkboxes, badges, and swipe actions for the scope.
+    /// Accent color for this tab — Today is warm, Week is calm, Weekend is fresh.
     var color: Color {
         switch self {
         case .daily: .orange
         case .weekly: .blue
         case .weekend: .green
-        }
-    }
-
-    var completedSectionLabel: String {
-        switch self {
-        case .daily: "Completed today"
-        case .weekly: "Completed this week"
-        case .weekend: "Completed this weekend"
-        }
-    }
-
-    func includesCompletion(at date: Date, relativeTo reference: Date = .now, calendar: Calendar = .current) -> Bool {
-        switch self {
-        case .daily:
-            return calendar.isDate(date, inSameDayAs: reference)
-        case .weekly:
-            return calendar.isDate(date, equalTo: reference, toGranularity: .weekOfYear)
-        case .weekend:
-            let weekday = calendar.component(.weekday, from: date)
-            guard weekday == 1 || weekday == 7 else { return false }
-            return calendar.isDate(date, equalTo: reference, toGranularity: .weekOfYear)
         }
     }
 }

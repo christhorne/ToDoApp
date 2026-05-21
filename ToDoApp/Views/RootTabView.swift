@@ -6,7 +6,7 @@ struct RootTabView: View {
     var body: some View {
         TabView(selection: $selection) {
             ForEach(TaskScope.allCases) { scope in
-                TaskListView(scope: scope)
+                PlannerView(scope: scope)
                     .tag(scope)
                     .tabItem {
                         Label(scope.displayName, systemImage: scope.systemImage)

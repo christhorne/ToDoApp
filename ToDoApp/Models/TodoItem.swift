@@ -4,23 +4,20 @@ import SwiftData
 @Model
 final class TodoItem {
     var title: String
-    var scope: TaskScope
-    var dueDate: Date?
+    var day: Date = Date.now
     var createdAt: Date
     var completedAt: Date?
     var sortOrder: Int
 
     init(
         title: String,
-        scope: TaskScope = .daily,
-        dueDate: Date? = nil,
+        day: Date = .now,
         createdAt: Date = .now,
         completedAt: Date? = nil,
         sortOrder: Int = 0
     ) {
         self.title = title
-        self.scope = scope
-        self.dueDate = dueDate
+        self.day = Calendar.current.startOfDay(for: day)
         self.createdAt = createdAt
         self.completedAt = completedAt
         self.sortOrder = sortOrder
