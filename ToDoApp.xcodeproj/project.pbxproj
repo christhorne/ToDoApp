@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		10B37EFB91847FC040C2F7E6 /* ToDoAppWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9FBC06D4253FE274C3C21970 /* ToDoAppWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		13F6BAB3B94AC7BD0F56BCC3 /* ShareSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D44756D124F568B89E0C7A /* ShareSheetView.swift */; };
 		1811CA283A3A1DECB3D3E05F /* ToDoAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F79DFD2652191E52A8132801 /* ToDoAppApp.swift */; };
 		40A5DDD3CA0FC64F061840D0 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F82D84D7171BDE2950B437AC /* Preview Assets.xcassets */; };
 		44B934A50C32FDE17BD0D76A /* FridgeWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B76FADB4ED91C1F8723526F /* FridgeWidget.swift */; };
@@ -20,7 +21,9 @@
 		82EA982DD2E0C34A87EDC2D4 /* TodoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E621D2F5DA713C77F5729DD2 /* TodoItem.swift */; };
 		842E957414F10F69FBE5E47E /* AddTaskSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A754488D87AD86D36DEC95 /* AddTaskSheet.swift */; };
 		8A7D90CACE8428752E840E58 /* FridgeWidgetEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 483276A9EEE0DEF613B13CEF /* FridgeWidgetEntry.swift */; };
+		8B5D662678B63A452DD23A7F /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2992B866A09E7054CB1D0E5C /* AppConfig.swift */; };
 		8ED8FC204BE12F21A5CDAC1F /* WidgetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C85538781EB2B06A8793D54F /* WidgetStore.swift */; };
+		990D1DF5D041CB63B3173AD2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E547680E27C6AEB4C31437 /* SettingsView.swift */; };
 		9ED3ECA0C63C86B3436E39B9 /* ModelContainer+Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CEE1C47C5432B91C474E30 /* ModelContainer+Shared.swift */; };
 		A9B0DF162A9796EA7C6A6B47 /* TaskScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7463D7A8199BD05F4CD513 /* TaskScope.swift */; };
 		BE6FDFDE3B913A239F163AF0 /* ToDoAppWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B538B038291DE230E4D0AC9 /* ToDoAppWidgetBundle.swift */; };
@@ -55,6 +58,8 @@
 
 /* Begin PBXFileReference section */
 		1137D8FE07FE0F7419351E78 /* SharedAppGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedAppGroup.swift; sourceTree = "<group>"; };
+		17D44756D124F568B89E0C7A /* ShareSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheetView.swift; sourceTree = "<group>"; };
+		2992B866A09E7054CB1D0E5C /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		2B76FADB4ED91C1F8723526F /* FridgeWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FridgeWidget.swift; sourceTree = "<group>"; };
 		2C8ACFCCE6C31A619B72FFA6 /* ToDoApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ToDoApp.entitlements; sourceTree = "<group>"; };
 		2F8167B12DB212A72CC17ACB /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
@@ -62,6 +67,7 @@
 		3B7463D7A8199BD05F4CD513 /* TaskScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskScope.swift; sourceTree = "<group>"; };
 		47A754488D87AD86D36DEC95 /* AddTaskSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTaskSheet.swift; sourceTree = "<group>"; };
 		483276A9EEE0DEF613B13CEF /* FridgeWidgetEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FridgeWidgetEntry.swift; sourceTree = "<group>"; };
+		64E547680E27C6AEB4C31437 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		888526FD9C99D628D33D6462 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9A2B3C72DC0835F149071641 /* TaskRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRow.swift; sourceTree = "<group>"; };
 		9B538B038291DE230E4D0AC9 /* ToDoAppWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoAppWidgetBundle.swift; sourceTree = "<group>"; };
@@ -81,6 +87,7 @@
 		1CBABD74A524730ADEFF27A9 /* Persistence */ = {
 			isa = PBXGroup;
 			children = (
+				2992B866A09E7054CB1D0E5C /* AppConfig.swift */,
 				E4CEE1C47C5432B91C474E30 /* ModelContainer+Shared.swift */,
 				1137D8FE07FE0F7419351E78 /* SharedAppGroup.swift */,
 			);
@@ -141,6 +148,8 @@
 			children = (
 				47A754488D87AD86D36DEC95 /* AddTaskSheet.swift */,
 				2F8167B12DB212A72CC17ACB /* RootTabView.swift */,
+				64E547680E27C6AEB4C31437 /* SettingsView.swift */,
+				17D44756D124F568B89E0C7A /* ShareSheetView.swift */,
 				F8A39CCD0968824AA18B4B5F /* TaskListView.swift */,
 				9A2B3C72DC0835F149071641 /* TaskRow.swift */,
 			);
@@ -271,8 +280,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				842E957414F10F69FBE5E47E /* AddTaskSheet.swift in Sources */,
+				8B5D662678B63A452DD23A7F /* AppConfig.swift in Sources */,
 				9ED3ECA0C63C86B3436E39B9 /* ModelContainer+Shared.swift in Sources */,
 				6CB4E97BA6E3C7E27891865F /* RootTabView.swift in Sources */,
+				990D1DF5D041CB63B3173AD2 /* SettingsView.swift in Sources */,
+				13F6BAB3B94AC7BD0F56BCC3 /* ShareSheetView.swift in Sources */,
 				D1C9C063B4C1D9D8B460B0F8 /* SharedAppGroup.swift in Sources */,
 				52E1BA411A011C9420F5D901 /* TaskListView.swift in Sources */,
 				7E0B475545B238F8ED377958 /* TaskRow.swift in Sources */,

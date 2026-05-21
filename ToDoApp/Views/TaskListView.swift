@@ -8,6 +8,7 @@ struct TaskListView: View {
     @Query(sort: [SortDescriptor(\TodoItem.sortOrder), SortDescriptor(\TodoItem.createdAt)])
     private var allItems: [TodoItem]
     @State private var showingAddSheet = false
+    @State private var showingSettings = false
     @State private var showRecentlyCompleted = false
 
     private var openItems: [TodoItem] {
@@ -73,6 +74,14 @@ struct TaskListView: View {
             }
             .navigationTitle(scope.displayName)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showingSettings = true
+                    } label: {
+                        Image(systemName: "gear")
+                    }
+                    .accessibilityLabel("Settings")
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         showingAddSheet = true
@@ -84,6 +93,9 @@ struct TaskListView: View {
             }
             .sheet(isPresented: $showingAddSheet) {
                 AddTaskSheet(defaultScope: scope)
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
             }
         }
     }
