@@ -1,17 +1,29 @@
 # ToDoApp
 
-A SwiftUI iOS to-do app for family coordination, with three list types
-(Today / Week / Weekend), on-device SwiftData persistence, and a CloudKit-
-ready sync path. Built as a class project from a real user interview.
+A SwiftUI iOS to-do app for family coordination. Tasks are dated, and
+Today / Week / Weekend are three windows onto the same dated tasks.
+On-device SwiftData persistence with a CloudKit-ready sync path. Built
+as a class project from a real user interview.
+
+## How the lists work
+
+Every task belongs to a **day**. The three tabs are views, not separate
+buckets:
+
+- **Today** — tasks dated today, plus an "Earlier" section that carries
+  forward anything overdue so nothing silently expires.
+- **Week** — the current week as seven day-sections, each with its own
+  inline add row. A task added for Thursday shows here and in Today.
+- **Weekend** — the Saturday/Sunday day-sections.
 
 ## Pain points it solves
 
 | Pain point | Solution |
 |---|---|
-| Poor flow between week and weekend lists | One-tap "Move to scope" via row context menu and leading swipe |
-| No accountability for when tasks were finished | `completedAt` timestamp; rows show "Done Xm ago"; "Recently completed" disclosure at the bottom of each list |
-| Not visible like a fridge calendar | Home Screen / Lock Screen / StandBy widget (Checkpoint F) |
-| Hard to decide weekend vs weekday | Three-tab navigation makes the choice the primary action; segmented scope picker on the add-task sheet |
+| Poor flow between week and weekend lists | Tasks are dated, not bucketed — swipe a task to re-date it via a date picker; it appears in whichever views that day falls into |
+| No accountability for when tasks were finished | `completedAt` timestamp; completed tasks show struck-through under their day with "Done Xm ago" |
+| Not visible like a fridge calendar | Home Screen / Lock Screen / StandBy widget |
+| Hard to decide weekend vs weekday | You pick a day; the task naturally surfaces in the right view |
 
 ## Requirements
 
@@ -54,11 +66,11 @@ functional, just not synced across devices.
 
 ## Sharing with a spouse (scaffold only)
 
-The Settings tab exposes a "Share with spouse" button that presents
-`UICloudSharingController` (Checkpoint G). It's wired but not validated
-across two real iCloud accounts — that requires the paid developer
-account plus two devices with separate iCloud sign-ins and is out of
-scope for the class deliverable.
+Settings exposes a "Share with spouse" button that presents
+`UICloudSharingController`. It's wired but not validated across two real
+iCloud accounts — that requires the paid developer account plus two
+devices with separate iCloud sign-ins and is out of scope for the class
+deliverable.
 
 ## Project layout
 
@@ -66,14 +78,16 @@ scope for the class deliverable.
 ToDoApp/
   ToDoAppApp.swift              @main, injects ModelContainer
   Models/
-    TaskScope.swift             enum: daily / weekly / weekend
-    TodoItem.swift              SwiftData @Model
+    TaskScope.swift             the three tabs (Today/Week/Weekend)
+    TodoItem.swift              SwiftData @Model — a dated task
+    CalendarHelper.swift        week / weekend day math
   Persistence/
     ModelContainer+Shared.swift on-disk container, CloudKit toggle
   Views/
     RootTabView.swift           three-tab shell
-    TaskListView.swift          reusable list keyed by TaskScope; inline add
+    PlannerView.swift           dated planner; per-day sections + inline add
     TaskRow.swift               row with completion + editable title
+    RescheduleSheet.swift       date picker for re-dating a task
     SettingsView.swift          settings sheet + share scaffold
-ToDoAppWidget/                  (Checkpoint F — Home Screen / Lock / StandBy)
+ToDoAppWidget/                  Home Screen / Lock Screen / StandBy widget
 ```
