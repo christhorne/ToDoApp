@@ -10,6 +10,8 @@ struct TaskListView: View {
     @State private var showingAddSheet = false
     @State private var showingSettings = false
     @State private var showCompletedSection = false
+    @State private var draftTitle = ""
+    @FocusState private var addFieldFocused: Bool
 
     private static let todayFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -40,46 +42,38 @@ struct TaskListView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if openItems.isEmpty && completedThisScope.isEmpty {
-                    ContentUnavailableView(
-                        "Nothing for \(scope.displayName.lowercased())",
-                        systemImage: scope.systemImage,
-                        description: Text("Tap + to add your first task.")
-                    )
-                } else {
-                    List {
-                        ForEach(openItems) { item in
-                            TaskRow(item: item)
-                                .swipeActions(edge: .leading) {
-                                    ForEach(otherScopes(for: item)) { other in
-                                        Button {
-                                            withAnimation {
-                                                item.scope = other
-                                            }
-                                        } label: {
-                                            Label("Move to \(other.displayName)", systemImage: other.systemImage)
-                                        }
-                                        .tint(other.color)
+            List {
+                ForEach(openItems) { item in
+                    TaskRow(item: item)
+                        .swipeActions(edge: .leading) {
+                            ForEach(otherScopes(for: item)) { other in
+                                Button {
+                                    withAnimation {
+                                        item.scope = other
                                     }
+                                } label: {
+                                    Label("Move to \(other.displayName)", systemImage: other.systemImage)
                                 }
-                        }
-                        .onDelete(perform: deleteOpen)
-
-                        if !completedThisScope.isEmpty {
-                            DisclosureGroup(isExpanded: $showCompletedSection) {
-                                ForEach(completedThisScope) { item in
-                                    TaskRow(item: item)
-                                }
-                                .onDelete(perform: deleteCompleted)
-                            } label: {
-                                completedSectionLabel
+                                .tint(other.color)
                             }
                         }
+                }
+                .onDelete(perform: deleteOpen)
+
+                inlineAddRow
+
+                if !completedThisScope.isEmpty {
+                    DisclosureGroup(isExpanded: $showCompletedSection) {
+                        ForEach(completedThisScope) { item in
+                            TaskRow(item: item)
+                        }
+                        .onDelete(perform: deleteCompleted)
+                    } label: {
+                        completedSectionLabel
                     }
-                    .listStyle(.plain)
                 }
             }
+            .listStyle(.plain)
             .navigationTitle(navigationTitleText)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -94,9 +88,9 @@ struct TaskListView: View {
                     Button {
                         showingAddSheet = true
                     } label: {
-                        Image(systemName: "plus")
+                        Image(systemName: "square.and.pencil")
                     }
-                    .accessibilityLabel("Add task")
+                    .accessibilityLabel("Add task with details")
                 }
             }
             .sheet(isPresented: $showingAddSheet) {
@@ -107,6 +101,22 @@ struct TaskListView: View {
             }
         }
         .tint(scope.color)
+    }
+
+    private var inlineAddRow: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "plus.circle.fill")
+                .font(.title2)
+                .foregroundStyle(scope.color)
+            TextField("Add a task", text: $draftTitle)
+                .focused($addFieldFocused)
+                .submitLabel(.return)
+                .onSubmit { commitInline() }
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, 6)
+        .contentShape(Rectangle())
+        .onTapGesture { addFieldFocused = true }
     }
 
     private var completedSectionLabel: some View {
@@ -125,6 +135,23 @@ struct TaskListView: View {
                 .background(scope.color.opacity(0.15), in: Capsule())
         }
         .font(.subheadline)
+    }
+
+    private func commitInline() {
+        let trimmed = draftTitle.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            addFieldFocused = false
+            return
+        }
+        withAnimation {
+            modelContext.insert(TodoItem(title: trimmed, scope: scope))
+        }
+        draftTitle = ""
+        // Re-assert focus after the submit resigns it, so Return adds and
+        // keeps going — rapid multi-add without reaching for the screen.
+        DispatchQueue.main.async {
+            addFieldFocused = true
+        }
     }
 
     private func otherScopes(for item: TodoItem) -> [TaskScope] {
