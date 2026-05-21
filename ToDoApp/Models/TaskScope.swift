@@ -43,7 +43,7 @@ enum TaskScope: String, CaseIterable, Identifiable {
     }
 
     /// Whether a task completed at `date` belongs in this tab's Completed section.
-    func includesCompletion(at date: Date, relativeTo reference: Date = .now, calendar: Calendar = .current) -> Bool {
+    func includesCompletion(at date: Date, relativeTo reference: Date = .now, calendar: Calendar = CalendarHelper.weekCalendar) -> Bool {
         switch self {
         case .daily:
             return calendar.isDate(date, inSameDayAs: reference)

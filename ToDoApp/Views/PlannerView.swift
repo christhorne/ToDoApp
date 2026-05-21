@@ -43,9 +43,13 @@ struct PlannerView: View {
         }
     }
 
-    /// Days the week/weekend view actually renders: today and future always;
-    /// past days only when they still hold open (leftover) tasks.
+    /// Days the week/weekend view actually renders. The Weekend tab always
+    /// shows both Saturday and Sunday. The Week tab shows today and future
+    /// always, and past days only when they still hold open (leftover) tasks.
     private var visibleDays: [Date] {
+        if scope == .weekend {
+            return dayGroups
+        }
         let today = CalendarHelper.today
         return dayGroups.filter { day in
             if day < today {
