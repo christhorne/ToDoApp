@@ -8,15 +8,24 @@ struct TaskListView: View {
     @Query(sort: [SortDescriptor(\TodoItem.sortOrder), SortDescriptor(\TodoItem.createdAt)])
     private var allItems: [TodoItem]
     @State private var showingAddSheet = false
+    @State private var showRecentlyCompleted = false
 
-    private var items: [TodoItem] {
+    private var openItems: [TodoItem] {
         allItems.filter { $0.scope == scope && $0.completedAt == nil }
+    }
+
+    private var recentlyCompleted: [TodoItem] {
+        let cutoff = Date.now.addingTimeInterval(-7 * 24 * 3600)
+        return allItems
+            .filter { $0.scope == scope }
+            .filter { ($0.completedAt ?? .distantPast) > cutoff }
+            .sorted { ($0.completedAt ?? .distantPast) > ($1.completedAt ?? .distantPast) }
     }
 
     var body: some View {
         NavigationStack {
             Group {
-                if items.isEmpty {
+                if openItems.isEmpty && recentlyCompleted.isEmpty {
                     ContentUnavailableView(
                         "Nothing for \(scope.displayName.lowercased())",
                         systemImage: scope.systemImage,
@@ -24,7 +33,7 @@ struct TaskListView: View {
                     )
                 } else {
                     List {
-                        ForEach(items) { item in
+                        ForEach(openItems) { item in
                             TaskRow(item: item)
                                 .swipeActions(edge: .leading) {
                                     ForEach(otherScopes(for: item)) { other in
@@ -39,7 +48,25 @@ struct TaskListView: View {
                                     }
                                 }
                         }
-                        .onDelete(perform: delete)
+                        .onDelete(perform: deleteOpen)
+
+                        if !recentlyCompleted.isEmpty {
+                            DisclosureGroup(isExpanded: $showRecentlyCompleted) {
+                                ForEach(recentlyCompleted) { item in
+                                    TaskRow(item: item)
+                                }
+                                .onDelete(perform: deleteCompleted)
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(.secondary)
+                                    Text("Recently completed")
+                                    Text("\(recentlyCompleted.count)")
+                                        .foregroundStyle(.secondary)
+                                }
+                                .font(.subheadline)
+                            }
+                        }
                     }
                     .listStyle(.plain)
                 }
@@ -73,9 +100,15 @@ struct TaskListView: View {
         }
     }
 
-    private func delete(at offsets: IndexSet) {
+    private func deleteOpen(at offsets: IndexSet) {
         for index in offsets {
-            modelContext.delete(items[index])
+            modelContext.delete(openItems[index])
+        }
+    }
+
+    private func deleteCompleted(at offsets: IndexSet) {
+        for index in offsets {
+            modelContext.delete(recentlyCompleted[index])
         }
     }
 }

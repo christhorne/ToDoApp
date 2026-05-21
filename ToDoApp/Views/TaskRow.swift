@@ -3,6 +3,13 @@ import SwiftUI
 struct TaskRow: View {
     @Bindable var item: TodoItem
 
+    private static let relativeFormatter: RelativeDateTimeFormatter = {
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .abbreviated
+        f.dateTimeStyle = .numeric
+        return f
+    }()
+
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Button {
@@ -21,6 +28,11 @@ struct TaskRow: View {
                 if let notes = item.notes, !notes.isEmpty {
                     Text(notes)
                         .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                if let completedAt = item.completedAt {
+                    Text("Done \(Self.relativeFormatter.localizedString(for: completedAt, relativeTo: .now))")
+                        .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
             }
@@ -44,6 +56,8 @@ struct TaskRow: View {
     }
 
     private func toggleComplete() {
-        item.completedAt = item.isComplete ? nil : .now
+        withAnimation {
+            item.completedAt = item.isComplete ? nil : .now
+        }
     }
 }
