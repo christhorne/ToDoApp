@@ -17,6 +17,7 @@ struct PlannerView: View {
     @State private var dayExpansion: [Date: Bool] = [:]
 
     private let rowInsets = EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16)
+    private let dayHeaderInsets = EdgeInsets(top: 16, leading: 16, bottom: 6, trailing: 16)
 
     private static let titleFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -39,6 +40,18 @@ struct PlannerView: View {
         case .daily: [CalendarHelper.today]
         case .weekly: CalendarHelper.daysOfCurrentWeek()
         case .weekend: CalendarHelper.weekendDays()
+        }
+    }
+
+    /// Days the week/weekend view actually renders: today and future always;
+    /// past days only when they still hold open (leftover) tasks.
+    private var visibleDays: [Date] {
+        let today = CalendarHelper.today
+        return dayGroups.filter { day in
+            if day < today {
+                return !openItems(on: day).isEmpty
+            }
+            return true
         }
     }
 
@@ -67,23 +80,10 @@ struct PlannerView: View {
     var body: some View {
         NavigationStack {
             List {
-                if scope == .daily, !overdueItems.isEmpty {
-                    Section {
-                        ForEach(overdueItems) { item in
-                            taskRow(item)
-                        }
-                        .onDelete { deleteItems(overdueItems, at: $0) }
-                    } header: {
-                        plainHeader("Earlier")
-                    }
-                }
-
-                ForEach(dayGroups, id: \.self) { day in
-                    daySection(day)
-                }
-
-                if !completedItems.isEmpty {
-                    completedSection
+                if scope == .daily {
+                    todayContent
+                } else {
+                    weekContent
                 }
             }
             .listStyle(.plain)
@@ -111,21 +111,45 @@ struct PlannerView: View {
         .tint(scope.color)
     }
 
-    // MARK: - Sections
+    // MARK: - Today
 
     @ViewBuilder
-    private func daySection(_ day: Date) -> some View {
-        if scope == .daily {
+    private var todayContent: some View {
+        if !overdueItems.isEmpty {
             Section {
+                ForEach(overdueItems) { item in
+                    taskRow(item)
+                }
+                .onDelete { deleteItems(overdueItems, at: $0) }
+            } header: {
+                plainHeader("Earlier")
+            }
+        }
+
+        Section {
+            dayRows(CalendarHelper.today)
+        }
+
+        if !completedItems.isEmpty {
+            completedSection
+        }
+    }
+
+    // MARK: - Week / Weekend
+
+    @ViewBuilder
+    private var weekContent: some View {
+        ForEach(Array(visibleDays.enumerated()), id: \.element) { index, day in
+            dayHeaderRow(day)
+                .listRowInsets(dayHeaderInsets)
+                .listRowSeparator(index == 0 ? .hidden : .automatic, edges: .top)
+            if isDayExpanded(day) {
                 dayRows(day)
             }
-        } else {
-            Section {
-                dayHeaderRow(day)
-                if isDayExpanded(day) {
-                    dayRows(day)
-                }
-            }
+        }
+
+        if !completedItems.isEmpty {
+            completedSection
         }
     }
 
@@ -213,7 +237,6 @@ struct PlannerView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .listRowInsets(rowInsets)
     }
 
     private func chevron(expanded: Bool) -> some View {
@@ -264,7 +287,17 @@ struct PlannerView: View {
     // MARK: - Expansion
 
     private func isDayExpanded(_ day: Date) -> Bool {
-        dayExpansion[day] ?? (day >= CalendarHelper.today)
+        dayExpansion[day] ?? defaultExpanded(day)
+    }
+
+    /// Today expands; past days stay collapsed (leftovers — expand to handle);
+    /// future days expand only if they hold tasks, except the focused Weekend
+    /// tab which keeps its two days open for planning.
+    private func defaultExpanded(_ day: Date) -> Bool {
+        if Calendar.current.isDateInToday(day) { return true }
+        if day < CalendarHelper.today { return false }
+        if scope == .weekend { return true }
+        return !openItems(on: day).isEmpty
     }
 
     private func toggleDay(_ day: Date) {
