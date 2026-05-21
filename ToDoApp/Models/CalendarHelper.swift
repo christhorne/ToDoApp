@@ -29,4 +29,23 @@ enum CalendarHelper {
             return weekday == 1 || weekday == 7
         }
     }
+
+    private static let ordinalFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .ordinal
+        return f
+    }()
+
+    private static let weekdayMonthFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEEE, MMMM"
+        return f
+    }()
+
+    /// A full date with an ordinal day, e.g. "Thursday, May 21st".
+    static func longDateWithOrdinal(_ date: Date, calendar: Calendar = .current) -> String {
+        let dayNumber = calendar.component(.day, from: date)
+        let ordinal = ordinalFormatter.string(from: NSNumber(value: dayNumber)) ?? "\(dayNumber)"
+        return "\(weekdayMonthFormatter.string(from: date)) \(ordinal)"
+    }
 }

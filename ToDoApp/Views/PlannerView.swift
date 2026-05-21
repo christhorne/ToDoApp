@@ -13,6 +13,8 @@ struct PlannerView: View {
     @State private var reschedulingItem: TodoItem?
     @State private var drafts: [Date: String] = [:]
     @FocusState private var focusedAddDay: Date?
+    @State private var showCompleted = false
+    @State private var dayExpansion: [Date: Bool] = [:]
 
     private let rowInsets = EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16)
 
@@ -45,6 +47,15 @@ struct PlannerView: View {
         return allItems.filter { $0.completedAt == nil && $0.day < today }
     }
 
+    private var completedItems: [TodoItem] {
+        allItems
+            .filter { item in
+                guard let completedAt = item.completedAt else { return false }
+                return scope.includesCompletion(at: completedAt)
+            }
+            .sorted { ($0.completedAt ?? .distantPast) > ($1.completedAt ?? .distantPast) }
+    }
+
     private var navigationTitleText: String {
         switch scope {
         case .daily: Self.titleFormatter.string(from: .now)
@@ -56,27 +67,23 @@ struct PlannerView: View {
     var body: some View {
         NavigationStack {
             List {
-                if scope == .daily && !overdueItems.isEmpty {
+                if scope == .daily, !overdueItems.isEmpty {
                     Section {
                         ForEach(overdueItems) { item in
                             taskRow(item)
                         }
                         .onDelete { deleteItems(overdueItems, at: $0) }
                     } header: {
-                        sectionHeader("Earlier", highlighted: false)
+                        plainHeader("Earlier")
                     }
                 }
 
                 ForEach(dayGroups, id: \.self) { day in
-                    if scope == .daily {
-                        Section { dayRows(day) }
-                    } else {
-                        Section {
-                            dayRows(day)
-                        } header: {
-                            dayHeader(day)
-                        }
-                    }
+                    daySection(day)
+                }
+
+                if !completedItems.isEmpty {
+                    completedSection
                 }
             }
             .listStyle(.plain)
@@ -104,11 +111,27 @@ struct PlannerView: View {
         .tint(scope.color)
     }
 
+    // MARK: - Sections
+
+    @ViewBuilder
+    private func daySection(_ day: Date) -> some View {
+        if scope == .daily {
+            Section {
+                dayRows(day)
+            }
+        } else {
+            Section {
+                dayHeaderRow(day)
+                if isDayExpanded(day) {
+                    dayRows(day)
+                }
+            }
+        }
+    }
+
     @ViewBuilder
     private func dayRows(_ day: Date) -> some View {
         let open = openItems(on: day)
-        let completed = completedItems(on: day)
-
         ForEach(Array(open.enumerated()), id: \.element.id) { index, item in
             taskRow(item)
                 .listRowSeparator(scope == .daily && index == 0 ? .hidden : .automatic, edges: .top)
@@ -116,18 +139,89 @@ struct PlannerView: View {
         .onDelete { deleteItems(open, at: $0) }
         .onMove { moveItems(on: day, from: $0, to: $1) }
 
-        ForEach(completed) { item in
-            taskRow(item)
-        }
-        .onDelete { deleteItems(completed, at: $0) }
-
         if !isEditing {
             addRow(for: day)
-                .listRowSeparator(
-                    scope == .daily && open.isEmpty && completed.isEmpty ? .hidden : .automatic,
-                    edges: .top
-                )
+                .listRowSeparator(scope == .daily && open.isEmpty ? .hidden : .automatic, edges: .top)
         }
+    }
+
+    private var completedSection: some View {
+        Section {
+            Button {
+                withAnimation { showCompleted.toggle() }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.square.fill")
+                        .foregroundStyle(scope.color)
+                    Text(scope.completedSectionLabel)
+                        .fontWeight(.medium)
+                    Spacer()
+                    Text("\(completedItems.count)")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(scope.color)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(scope.color.opacity(0.15), in: Capsule())
+                    chevron(expanded: showCompleted)
+                }
+                .font(.subheadline)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .listRowInsets(rowInsets)
+
+            if showCompleted {
+                ForEach(completedItems) { item in
+                    taskRow(item)
+                }
+                .onDelete { deleteItems(completedItems, at: $0) }
+            }
+        }
+    }
+
+    // MARK: - Rows
+
+    private func dayHeaderRow(_ day: Date) -> some View {
+        let isToday = Calendar.current.isDateInToday(day)
+        let openCount = openItems(on: day).count
+        return Button {
+            withAnimation { toggleDay(day) }
+        } label: {
+            HStack(spacing: 8) {
+                if isToday {
+                    Text(CalendarHelper.longDateWithOrdinal(day))
+                        .fontWeight(.semibold)
+                        .foregroundStyle(scope.color)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 3)
+                        .background(scope.color.opacity(0.15), in: Capsule())
+                } else {
+                    Text(Self.dayHeaderFormatter.string(from: day))
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                if openCount > 0 {
+                    Text("\(openCount)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                chevron(expanded: isDayExpanded(day))
+            }
+            .font(.subheadline)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .listRowInsets(rowInsets)
+    }
+
+    private func chevron(expanded: Bool) -> some View {
+        Image(systemName: "chevron.right")
+            .font(.caption2)
+            .fontWeight(.semibold)
+            .foregroundStyle(.tertiary)
+            .rotationEffect(.degrees(expanded ? 90 : 0))
     }
 
     private func taskRow(_ item: TodoItem) -> some View {
@@ -159,18 +253,22 @@ struct PlannerView: View {
         .onTapGesture { focusedAddDay = day }
     }
 
-    private func dayHeader(_ day: Date) -> some View {
-        let isToday = Calendar.current.isDateInToday(day)
-        let text = isToday ? "Today" : Self.dayHeaderFormatter.string(from: day)
-        return sectionHeader(text, highlighted: isToday)
-    }
-
-    private func sectionHeader(_ text: String, highlighted: Bool) -> some View {
+    private func plainHeader(_ text: String) -> some View {
         Text(text)
             .font(.subheadline)
             .fontWeight(.semibold)
-            .foregroundStyle(highlighted ? AnyShapeStyle(scope.color) : AnyShapeStyle(.secondary))
+            .foregroundStyle(.secondary)
             .textCase(nil)
+    }
+
+    // MARK: - Expansion
+
+    private func isDayExpanded(_ day: Date) -> Bool {
+        dayExpansion[day] ?? (day >= CalendarHelper.today)
+    }
+
+    private func toggleDay(_ day: Date) {
+        dayExpansion[day] = !isDayExpanded(day)
     }
 
     // MARK: - Data
@@ -179,13 +277,6 @@ struct PlannerView: View {
         let calendar = Calendar.current
         return allItems.filter {
             $0.completedAt == nil && calendar.isDate($0.day, inSameDayAs: day)
-        }
-    }
-
-    private func completedItems(on day: Date) -> [TodoItem] {
-        let calendar = Calendar.current
-        return allItems.filter {
-            $0.completedAt != nil && calendar.isDate($0.day, inSameDayAs: day)
         }
     }
 
