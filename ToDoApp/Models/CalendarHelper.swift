@@ -36,6 +36,19 @@ enum CalendarHelper {
         }
     }
 
+    static var tomorrow: Date {
+        weekCalendar.date(byAdding: .day, value: 1, to: today) ?? today
+    }
+
+    /// The upcoming (or current) Saturday — never a past date.
+    static var upcomingSaturday: Date {
+        let saturday = weekendDays().first ?? today
+        if saturday < today {
+            return weekCalendar.date(byAdding: .day, value: 7, to: saturday) ?? saturday
+        }
+        return saturday
+    }
+
     private static let ordinalFormatter: NumberFormatter = {
         let f = NumberFormatter()
         f.numberStyle = .ordinal
