@@ -9,24 +9,39 @@ struct TaskListView: View {
     private var allItems: [TodoItem]
     @State private var showingAddSheet = false
     @State private var showingSettings = false
-    @State private var showRecentlyCompleted = false
+    @State private var showCompletedSection = false
+
+    private static let todayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEE, MMM d"
+        return f
+    }()
 
     private var openItems: [TodoItem] {
         allItems.filter { $0.scope == scope && $0.completedAt == nil }
     }
 
-    private var recentlyCompleted: [TodoItem] {
-        let cutoff = Date.now.addingTimeInterval(-7 * 24 * 3600)
-        return allItems
+    private var completedThisScope: [TodoItem] {
+        allItems
             .filter { $0.scope == scope }
-            .filter { ($0.completedAt ?? .distantPast) > cutoff }
+            .filter { item in
+                guard let completedAt = item.completedAt else { return false }
+                return scope.includesCompletion(at: completedAt)
+            }
             .sorted { ($0.completedAt ?? .distantPast) > ($1.completedAt ?? .distantPast) }
+    }
+
+    private var navigationTitleText: String {
+        switch scope {
+        case .daily: Self.todayFormatter.string(from: .now)
+        case .weekly, .weekend: scope.displayName
+        }
     }
 
     var body: some View {
         NavigationStack {
             Group {
-                if openItems.isEmpty && recentlyCompleted.isEmpty {
+                if openItems.isEmpty && completedThisScope.isEmpty {
                     ContentUnavailableView(
                         "Nothing for \(scope.displayName.lowercased())",
                         systemImage: scope.systemImage,
@@ -51,9 +66,9 @@ struct TaskListView: View {
                         }
                         .onDelete(perform: deleteOpen)
 
-                        if !recentlyCompleted.isEmpty {
-                            DisclosureGroup(isExpanded: $showRecentlyCompleted) {
-                                ForEach(recentlyCompleted) { item in
+                        if !completedThisScope.isEmpty {
+                            DisclosureGroup(isExpanded: $showCompletedSection) {
+                                ForEach(completedThisScope) { item in
                                     TaskRow(item: item)
                                 }
                                 .onDelete(perform: deleteCompleted)
@@ -61,8 +76,8 @@ struct TaskListView: View {
                                 HStack(spacing: 6) {
                                     Image(systemName: "checkmark.circle.fill")
                                         .foregroundStyle(.secondary)
-                                    Text("Recently completed")
-                                    Text("\(recentlyCompleted.count)")
+                                    Text(scope.completedSectionLabel)
+                                    Text("\(completedThisScope.count)")
                                         .foregroundStyle(.secondary)
                                 }
                                 .font(.subheadline)
@@ -72,7 +87,7 @@ struct TaskListView: View {
                     .listStyle(.plain)
                 }
             }
-            .navigationTitle(scope.displayName)
+            .navigationTitle(navigationTitleText)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -120,7 +135,7 @@ struct TaskListView: View {
 
     private func deleteCompleted(at offsets: IndexSet) {
         for index in offsets {
-            modelContext.delete(recentlyCompleted[index])
+            modelContext.delete(completedThisScope[index])
         }
     }
 }
