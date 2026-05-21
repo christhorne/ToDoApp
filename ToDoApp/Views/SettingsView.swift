@@ -1,9 +1,12 @@
 import SwiftUI
+import SwiftData
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @State private var showingShareSheet = false
     @State private var showingCloudKitAlert = false
+    @State private var showingClearConfirmation = false
 
     var body: some View {
         NavigationStack {
@@ -29,6 +32,16 @@ struct SettingsView: View {
                 Section("About") {
                     LabeledContent("Version", value: "1.0")
                 }
+
+                Section {
+                    Button(role: .destructive) {
+                        showingClearConfirmation = true
+                    } label: {
+                        Label("Clear All Tasks", systemImage: "trash")
+                    }
+                } footer: {
+                    Text("Permanently deletes every task. This can't be undone.")
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -46,7 +59,24 @@ struct SettingsView: View {
             } message: {
                 Text("Syncing your lists across devices will be available in a future update.")
             }
+            .confirmationDialog(
+                "Delete all tasks?",
+                isPresented: $showingClearConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Delete All Tasks", role: .destructive) {
+                    clearAllData()
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("This permanently removes every task and can't be undone.")
+            }
         }
+    }
+
+    private func clearAllData() {
+        try? modelContext.delete(model: TodoItem.self)
+        try? modelContext.save()
     }
 }
 
