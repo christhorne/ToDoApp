@@ -21,7 +21,7 @@ enum TaskScope: String, CaseIterable, Identifiable {
         switch self {
         case .daily: "sun.max"
         case .weekly: "calendar"
-        case .weekend: "house"
+        case .weekend: "beach.umbrella"
         }
     }
 

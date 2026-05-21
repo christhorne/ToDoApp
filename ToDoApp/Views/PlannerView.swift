@@ -19,12 +19,6 @@ struct PlannerView: View {
     private let rowInsets = EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16)
     private let dayHeaderInsets = EdgeInsets(top: 16, leading: 16, bottom: 6, trailing: 16)
 
-    private static let titleFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "EEE, MMM d"
-        return f
-    }()
-
     private static let dayHeaderFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "EEEE d"
@@ -75,10 +69,16 @@ struct PlannerView: View {
 
     private var navigationTitleText: String {
         switch scope {
-        case .daily: Self.titleFormatter.string(from: .now)
+        case .daily: CalendarHelper.longDateWithOrdinal(CalendarHelper.today)
         case .weekly: "This Week"
         case .weekend: "This Weekend"
         }
+    }
+
+    /// True when some visible day holds enough open tasks to reorder.
+    private var canReorder: Bool {
+        let days = scope == .daily ? [CalendarHelper.today] : visibleDays
+        return days.contains { openItems(on: $0).count >= 2 }
     }
 
     var body: some View {
@@ -102,7 +102,9 @@ struct PlannerView: View {
                     .accessibilityLabel("Settings")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    EditButton()
+                    if canReorder || isEditing {
+                        EditButton()
+                    }
                 }
             }
             .sheet(isPresented: $showingSettings) {
@@ -184,13 +186,7 @@ struct PlannerView: View {
                     Text(scope.completedSectionLabel)
                         .fontWeight(.medium)
                     Spacer()
-                    Text("\(completedItems.count)")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(scope.color)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(scope.color.opacity(0.15), in: Capsule())
+                    countBadge(completedItems.count)
                     chevron(expanded: showCompleted)
                 }
                 .font(.subheadline)
@@ -227,13 +223,11 @@ struct PlannerView: View {
                 } else {
                     Text(Self.dayHeaderFormatter.string(from: day))
                         .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary)
                 }
                 Spacer()
                 if openCount > 0 {
-                    Text("\(openCount)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    countBadge(openCount)
                 }
                 chevron(expanded: isDayExpanded(day))
             }
@@ -249,6 +243,16 @@ struct PlannerView: View {
             .fontWeight(.semibold)
             .foregroundStyle(.tertiary)
             .rotationEffect(.degrees(expanded ? 90 : 0))
+    }
+
+    private func countBadge(_ count: Int) -> some View {
+        Text("\(count)")
+            .font(.caption)
+            .fontWeight(.medium)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 2)
+            .background(.quaternary, in: Capsule())
     }
 
     private func taskRow(_ item: TodoItem) -> some View {

@@ -22,7 +22,7 @@ struct SettingsView: View {
                     Text("Sharing")
                 } footer: {
                     if !AppConfig.useCloudKit {
-                        Text("Sharing is scaffolded but not active until CloudKit is configured. See README → Enabling CloudKit sync.")
+                        Text("Syncing your lists across devices isn't available yet.")
                     }
                 }
 
@@ -41,10 +41,10 @@ struct SettingsView: View {
                 ShareSheetView()
                     .ignoresSafeArea()
             }
-            .alert("CloudKit not configured", isPresented: $showingCloudKitAlert) {
+            .alert("Sharing isn't available yet", isPresented: $showingCloudKitAlert) {
                 Button("OK", role: .cancel) { }
             } message: {
-                Text("To enable sharing, configure the iCloud capability in Xcode and flip `AppConfig.useCloudKit` to true. See README.")
+                Text("Syncing your lists across devices will be available in a future update.")
             }
         }
     }
