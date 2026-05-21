@@ -99,6 +99,7 @@ struct PlannerView: View {
                     } label: {
                         Image(systemName: "gear")
                     }
+                    .tint(Color.secondary)
                     .accessibilityLabel("Settings")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
