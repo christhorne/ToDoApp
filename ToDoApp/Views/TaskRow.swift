@@ -33,11 +33,6 @@ struct TaskRow: View {
                     TextField("Task", text: $item.title)
                         .onSubmit(handleTitleSubmit)
                 }
-                if let notes = item.notes, !notes.isEmpty {
-                    Text(notes)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
                 if let completedAt = item.completedAt {
                     Text("Done \(Self.relativeFormatter.localizedString(for: completedAt, relativeTo: .now))")
                         .font(.caption2)

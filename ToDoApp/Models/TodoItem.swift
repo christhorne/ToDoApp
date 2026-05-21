@@ -4,7 +4,6 @@ import SwiftData
 @Model
 final class TodoItem {
     var title: String
-    var notes: String?
     var scope: TaskScope
     var dueDate: Date?
     var createdAt: Date
@@ -13,7 +12,6 @@ final class TodoItem {
 
     init(
         title: String,
-        notes: String? = nil,
         scope: TaskScope = .daily,
         dueDate: Date? = nil,
         createdAt: Date = .now,
@@ -21,7 +19,6 @@ final class TodoItem {
         sortOrder: Int = 0
     ) {
         self.title = title
-        self.notes = notes
         self.scope = scope
         self.dueDate = dueDate
         self.createdAt = createdAt
