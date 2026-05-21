@@ -16,10 +16,10 @@ struct SettingsView: View {
                             showingCloudKitAlert = true
                         }
                     } label: {
-                        Label("Share with spouse", systemImage: "person.2.fill")
+                        Label("Share this list", systemImage: "square.and.arrow.up")
                     }
                 } header: {
-                    Text("Family sharing")
+                    Text("Sharing")
                 } footer: {
                     if !AppConfig.useCloudKit {
                         Text("Sharing is scaffolded but not active until CloudKit is configured. See README → Enabling CloudKit sync.")
@@ -28,7 +28,6 @@ struct SettingsView: View {
 
                 Section("About") {
                     LabeledContent("Version", value: "1.0")
-                    LabeledContent("Built for", value: "Sabrina")
                 }
             }
             .navigationTitle("Settings")
@@ -45,7 +44,7 @@ struct SettingsView: View {
             .alert("CloudKit not configured", isPresented: $showingCloudKitAlert) {
                 Button("OK", role: .cancel) { }
             } message: {
-                Text("To enable share-with-spouse, configure the iCloud capability in Xcode and flip `AppConfig.useCloudKit` to true. See README.")
+                Text("To enable sharing, configure the iCloud capability in Xcode and flip `AppConfig.useCloudKit` to true. See README.")
             }
         }
     }
