@@ -60,9 +60,17 @@ struct AddTaskSheet: View {
         let item = TodoItem(
             title: trimmed,
             notes: notes.isEmpty ? nil : notes,
-            scope: scope
+            scope: scope,
+            sortOrder: nextSortOrder(for: scope)
         )
         modelContext.insert(item)
         dismiss()
+    }
+
+    /// Places a new task after the last one in its list so it appends
+    /// rather than inserting among manually reordered items.
+    private func nextSortOrder(for scope: TaskScope) -> Int {
+        let existing = (try? modelContext.fetch(FetchDescriptor<TodoItem>())) ?? []
+        return (existing.filter { $0.scope == scope }.map(\.sortOrder).max() ?? -1) + 1
     }
 }

@@ -46,20 +46,6 @@ struct TaskRow: View {
             }
             Spacer(minLength: 0)
         }
-        .contentShape(Rectangle())
-        .contextMenu {
-            Section("Move to") {
-                ForEach(TaskScope.allCases) { scope in
-                    Button {
-                        guard scope != item.scope else { return }
-                        item.scope = scope
-                    } label: {
-                        Label(scope.displayName, systemImage: scope.systemImage)
-                    }
-                    .disabled(scope == item.scope)
-                }
-            }
-        }
     }
 
     private func toggleComplete() {

@@ -5,6 +5,7 @@ struct TaskListView: View {
     let scope: TaskScope
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.editMode) private var editMode
     @Query(sort: [SortDescriptor(\TodoItem.sortOrder), SortDescriptor(\TodoItem.createdAt)])
     private var allItems: [TodoItem]
     @State private var showingAddSheet = false
@@ -20,6 +21,10 @@ struct TaskListView: View {
         f.dateFormat = "EEE, MMM d"
         return f
     }()
+
+    private var isEditing: Bool {
+        editMode?.wrappedValue.isEditing ?? false
+    }
 
     private var openItems: [TodoItem] {
         allItems.filter { $0.scope == scope && $0.completedAt == nil }
@@ -63,10 +68,13 @@ struct TaskListView: View {
                         }
                 }
                 .onDelete(perform: deleteOpen)
+                .onMove(perform: moveOpen)
 
-                inlineAddRow
-                    .listRowInsets(rowInsets)
-                    .listRowSeparator(openItems.isEmpty ? .hidden : .automatic, edges: .top)
+                if !isEditing {
+                    inlineAddRow
+                        .listRowInsets(rowInsets)
+                        .listRowSeparator(openItems.isEmpty ? .hidden : .automatic, edges: .top)
+                }
 
                 if !completedThisScope.isEmpty {
                     DisclosureGroup(isExpanded: $showCompletedSection) {
@@ -92,13 +100,18 @@ struct TaskListView: View {
                     }
                     .accessibilityLabel("Settings")
                 }
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showingAddSheet = true
-                    } label: {
-                        Image(systemName: "square.and.pencil")
+                ToolbarItem(placement: .topBarTrailing) {
+                    EditButton()
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    if !isEditing {
+                        Button {
+                            showingAddSheet = true
+                        } label: {
+                            Image(systemName: "square.and.pencil")
+                        }
+                        .accessibilityLabel("Add task with details")
                     }
-                    .accessibilityLabel("Add task with details")
                 }
             }
             .sheet(isPresented: $showingAddSheet) {
@@ -150,8 +163,9 @@ struct TaskListView: View {
             addFieldFocused = false
             return
         }
+        let nextOrder = (openItems.map(\.sortOrder).max() ?? -1) + 1
         withAnimation {
-            modelContext.insert(TodoItem(title: trimmed, scope: scope))
+            modelContext.insert(TodoItem(title: trimmed, scope: scope, sortOrder: nextOrder))
         }
         draftTitle = ""
         // Re-assert focus after the submit resigns it, so Return adds and
@@ -163,6 +177,14 @@ struct TaskListView: View {
 
     private func otherScopes(for item: TodoItem) -> [TaskScope] {
         TaskScope.allCases.filter { $0 != item.scope }
+    }
+
+    private func moveOpen(from source: IndexSet, to destination: Int) {
+        var reordered = openItems
+        reordered.move(fromOffsets: source, toOffset: destination)
+        for (index, item) in reordered.enumerated() {
+            item.sortOrder = index
+        }
     }
 
     private func deleteOpen(at offsets: IndexSet) {
