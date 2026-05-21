@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct ToDoAppApp: App {
@@ -6,5 +7,6 @@ struct ToDoAppApp: App {
         WindowGroup {
             RootTabView()
         }
+        .modelContainer(AppModelContainer.shared)
     }
 }
