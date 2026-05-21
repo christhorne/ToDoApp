@@ -1,93 +1,163 @@
 # ToDoApp
 
-A SwiftUI iOS to-do app for family coordination. Tasks are dated, and
-Today / Week / Weekend are three windows onto the same dated tasks.
-On-device SwiftData persistence with a CloudKit-ready sync path. Built
-as a class project from a real user interview.
+A SwiftUI iOS app for planning a family's day, week, and weekend — built
+around **dated tasks** shown through three simple views: **Today**,
+**Week**, and **Weekend**.
 
-## How the lists work
+Built as a class project, designed from a real user interview.
 
-Every task belongs to a **day**. The three tabs are views, not separate
-buckets:
+## The idea
 
-- **Today** — tasks dated today, plus an "Earlier" section that carries
-  forward anything overdue so nothing silently expires.
-- **Week** — the current week as seven day-sections, each with its own
-  inline add row. A task added for Thursday shows here and in Today.
-- **Weekend** — the Saturday/Sunday day-sections.
+The interview described a family juggling several separate Google Keep
+lists — a daily list, a weekly plan, and a weekend list — with tasks
+constantly needing to be shuffled between them. ToDoApp replaces that
+with **one set of tasks, each assigned to a day**. The three tabs aren't
+separate lists; they're three windows onto those same tasks, so nothing
+ever has to be copied or moved between lists by hand.
 
-## Pain points it solves
+## How it works
 
-| Pain point | Solution |
+Every task belongs to a **day**. The three tabs are lenses on the same
+dated tasks:
+
+- **Today** — tasks due today. Anything left unfinished from earlier is
+  carried forward into an "Earlier" section, so nothing silently slips
+  away.
+- **Week** — the current week, Monday through Sunday, as one section per
+  day. Empty past days are hidden, days collapse to stay tidy, and today
+  is highlighted.
+- **Weekend** — Saturday and Sunday, always shown together.
+
+A task added under Thursday automatically appears in the Week view and,
+when Thursday arrives, in Today — no duplication.
+
+### What you can do
+
+| Action | How |
 |---|---|
-| Poor flow between week and weekend lists | Tasks are dated, not bucketed — swipe a task to re-date it via a date picker; it appears in whichever views that day falls into |
-| No accountability for when tasks were finished | `completedAt` timestamp; completed tasks show struck-through under their day with "Done Xm ago" |
-| Not visible like a fridge calendar | Home Screen / Lock Screen / StandBy widget |
-| Hard to decide weekend vs weekday | You pick a day; the task naturally surfaces in the right view |
+| Add a task | Tap the "Add a task" row under any day and type. Press Return to add it and immediately start the next one. |
+| Edit a task | Tap its title and type. |
+| Complete a task | Tap the checkbox. Finished tasks collect in a "Completed" section you can expand. |
+| Move a task to another day | Swipe the task → **Move** → choose **Tomorrow**, **This Weekend**, or pick any date. |
+| Reorder tasks within a day | Tap **Edit**, then drag. |
+| Delete a task | Swipe it away. |
+| Start fresh | Settings → **Clear All Tasks** (asks to confirm first). |
+
+Each tab has its own accent color — Today orange, Week blue, Weekend
+green — so it's always clear which view you're in.
+
+## What it solves
+
+Each feature traces back to something the interview surfaced:
+
+| From the interview | How ToDoApp addresses it |
+|---|---|
+| Tasks were awkward to shuffle between separate week/weekend lists | Tasks aren't in separate lists — each has a day; re-dating one moves it between views automatically |
+| No sense of when something actually got done | Completing a task timestamps it; finished tasks gather in a dated "Completed" section |
+| The plan wasn't visible at a glance like a fridge calendar | A widget puts the day's tasks on the Home Screen, Lock Screen, and StandBy |
+| Hard to decide if something was a weekday or weekend task | You just give it a day; it surfaces in whichever view that day belongs to |
+
+## Tech overview
+
+- **SwiftUI** for the interface, **SwiftData** for storage, **WidgetKit**
+  for the widget.
+- Tasks persist on-device automatically. The data layer is
+  **CloudKit-ready** — cross-device sync can be switched on with a paid
+  Apple Developer account (see below).
+- Targets iOS 17+, built with Xcode 26.
 
 ## Requirements
 
-- macOS with Xcode 17+ (built against Xcode 26.5 / iOS 26.5 SDK)
-- [`xcodegen`](https://github.com/yonaskolb/XcodeGen) — `brew install xcodegen`
-- (Optional) Paid Apple Developer Program — required only to enable CloudKit sync
+- macOS with Xcode 17 or newer
+- [`xcodegen`](https://github.com/yonaskolb/XcodeGen) — install with
+  `brew install xcodegen`
+- (Optional) A paid Apple Developer Program membership — only needed to
+  turn on CloudKit sync
 
-## Build and run
+## Building and running
 
-```
+The Xcode project is **generated** from `project.yml` rather than
+hand-edited. To build:
+
+```sh
 xcodegen generate
 open ToDoApp.xcodeproj
 ```
 
-Pick an iPhone simulator and run.
+Then pick an iPhone simulator in Xcode and press Run.
 
-The Xcode project is **generated** from `project.yml`. Re-run `xcodegen
-generate` after adding or moving source files outside Xcode.
+Re-run `xcodegen generate` any time source files are added, moved, or
+deleted outside of Xcode.
+
+## How this app was built
+
+This project was developed iteratively with
+[Claude Code](https://www.anthropic.com/claude-code), Anthropic's
+command-line AI coding agent, working through the
+[XcodeBuildMCP](https://xcodebuildmcp.com) server.
+
+XcodeBuildMCP connects an AI agent directly to Xcode and the iOS
+simulator. It was used heavily throughout this project to:
+
+- generate and inspect the Xcode project,
+- build the app and surface compile errors,
+- install and launch it on the simulator,
+- capture screenshots to visually review each change.
+
+That build → run → screenshot loop is how nearly every feature here was
+checked before moving on. To reproduce the workflow, install
+XcodeBuildMCP and run Claude Code in this repository. None of it is
+required just to build the app — the `xcodegen` + Xcode steps above are
+enough on their own.
 
 ## Enabling CloudKit sync (optional)
 
-The repo ships with iCloud sync **off** because enabling it requires a
-paid Apple Developer Program membership to create a CloudKit container
-and provision the iCloud entitlement.
+The app ships with cross-device sync **off**, because turning it on
+requires a paid Apple Developer Program membership to create a CloudKit
+container.
 
-1. In Xcode, open the `ToDoApp` target → **Signing & Capabilities**.
+1. In Xcode, open the **ToDoApp** target → **Signing & Capabilities**.
 2. Set **Team** to a paid developer account.
-3. Tap **+ Capability** and add **iCloud**.
-4. Under iCloud, check **CloudKit** and add a container
-   (recommended ID: `iCloud.com.<your-org>.ToDoApp`).
-5. Tap **+ Capability** and add **Background Modes** → check
+3. Add the **iCloud** capability, check **CloudKit**, and add a container
+   (e.g. `iCloud.com.<your-name>.ToDoApp`).
+4. Add the **Background Modes** capability and check
    **Remote notifications**.
-6. Tap **+ Capability** and add **Push Notifications**.
-7. In `ToDoApp/Persistence/ModelContainer+Shared.swift`, change
-   `useCloudKit` to `true`.
-8. Build and run on a real device (or simulator) signed in to iCloud.
+5. Add the **Push Notifications** capability.
+6. In `ToDoApp/Persistence/AppConfig.swift`, change `useCloudKit` to
+   `true`.
+7. Build and run on a device or simulator signed in to iCloud.
 
-Without these steps the app uses on-disk SwiftData only — fully
-functional, just not synced across devices.
+Without these steps the app still works fully — it just keeps data on
+one device.
 
-## Sharing with a spouse (scaffold only)
+## Sharing (not yet active)
 
-Settings exposes a "Share with spouse" button that presents
-`UICloudSharingController`. It's wired but not validated across two real
-iCloud accounts — that requires the paid developer account plus two
-devices with separate iCloud sign-ins and is out of scope for the class
-deliverable.
+Settings includes a "Share this list" button. The sharing flow is
+scaffolded — it presents Apple's `UICloudSharingController` — but is not
+active: verifying it across two real iCloud accounts needs the paid
+developer account and two devices, which is out of scope for this class
+deliverable. Settings shows a plain-language note explaining this.
 
 ## Project layout
 
 ```
 ToDoApp/
-  ToDoAppApp.swift              @main, injects ModelContainer
+  ToDoAppApp.swift              App entry point; sets up storage
   Models/
-    TaskScope.swift             the three tabs (Today/Week/Weekend)
-    TodoItem.swift              SwiftData @Model — a dated task
-    CalendarHelper.swift        week / weekend day math
+    TodoItem.swift              A task — title, day, completion (SwiftData model)
+    TaskScope.swift             The three tabs: Today / Week / Weekend
+    CalendarHelper.swift        Week and weekend date math (Monday-start)
   Persistence/
-    ModelContainer+Shared.swift on-disk container, CloudKit toggle
+    AppConfig.swift             The CloudKit on/off switch
+    ModelContainer+Shared.swift The on-device data store
+    SharedAppGroup.swift        Shared storage location for the widget
   Views/
-    RootTabView.swift           three-tab shell
-    PlannerView.swift           dated planner; per-day sections + inline add
-    TaskRow.swift               row with completion + editable title
-    RescheduleSheet.swift       date picker for re-dating a task
-    SettingsView.swift          settings sheet + share scaffold
-ToDoAppWidget/                  Home Screen / Lock Screen / StandBy widget
+    RootTabView.swift           The three-tab shell
+    PlannerView.swift           The main planner — day sections, inline add
+    TaskRow.swift               A single task row
+    RescheduleSheet.swift       The "Move" sheet (Tomorrow / Weekend / date)
+    SettingsView.swift          Settings — sharing, clear data, version
+    ShareSheetView.swift        CloudKit share sheet wrapper (scaffold)
+ToDoAppWidget/                  The Home Screen / Lock Screen / StandBy widget
+project.yml                     xcodegen project definition
 ```
