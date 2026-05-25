@@ -31,9 +31,9 @@ struct TaskRow: View {
     private static let timeFormatStyle = Date.FormatStyle.dateTime.hour().minute()
 
     var body: some View {
-        ZStack(alignment: .leading) {
+        ZStack(alignment: .topLeading) {
             rowContent
-                .opacity(showingActions ? 0.15 : 1)
+                .opacity(showingActions ? 0.2 : 1)
                 .allowsHitTesting(!showingActions)
                 .contentShape(Rectangle())
                 .highPriorityGesture(longPressToReveal)
@@ -43,12 +43,14 @@ struct TaskRow: View {
 
             if showingActions {
                 actionBar
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .leading).combined(with: .opacity),
-                        removal: .opacity
-                    ))
+                    .padding(.vertical, 2)
+                    .transition(
+                        .scale(scale: 0.97, anchor: .topLeading)
+                            .combined(with: .opacity)
+                    )
             }
         }
+        .animation(.easeOut(duration: 0.22), value: showingActions)
         .sheet(isPresented: $showingTimePicker) {
             timePickerSheet
         }
@@ -139,47 +141,52 @@ struct TaskRow: View {
         LongPressGesture(minimumDuration: 0.35).onEnded { _ in
             guard !showingActions else { return }
             UISelectionFeedbackGenerator().selectionChanged()
-            withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
-                showingActions = true
-            }
+            showingActions = true
         }
     }
 
     private func dismissActions(then: (() -> Void)? = nil) {
-        withAnimation(.easeOut(duration: 0.18)) {
-            showingActions = false
-        }
+        showingActions = false
         if let then {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: then)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.24, execute: then)
         }
     }
 
     private var actionBar: some View {
-        HStack(spacing: 4) {
+        VStack(alignment: .leading, spacing: 0) {
             actionButton(title: "Time", systemImage: "clock", tint: .orange) {
                 dismissActions {
                     timeDraft = item.time ?? defaultTimeDraft()
                     showingTimePicker = true
                 }
             }
+            divider
             actionButton(title: "Repeat", systemImage: "arrow.triangle.2.circlepath", tint: .blue) {
                 dismissActions { showingRepeatDialog = true }
             }
+            divider
             actionButton(title: "Assign", systemImage: "person.crop.circle", tint: .purple) {
                 dismissActions { showingAssignDialog = true }
             }
+            divider
             actionButton(title: "Attach", systemImage: "paperclip", tint: .green) {
                 dismissActions { showingAttachDialog = true }
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .frame(width: 200, alignment: .leading)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(Color.primary.opacity(0.08))
         }
-        .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 3)
+        .shadow(color: .black.opacity(0.12), radius: 14, x: 0, y: 4)
+    }
+
+    private var divider: some View {
+        Rectangle()
+            .fill(Color.primary.opacity(0.06))
+            .frame(height: 0.5)
+            .padding(.leading, 52)
     }
 
     private func actionButton(
@@ -189,17 +196,18 @@ struct TaskRow: View {
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            VStack(spacing: 3) {
+            HStack(spacing: 14) {
                 Image(systemName: systemImage)
-                    .font(.title3.weight(.semibold))
+                    .font(.callout.weight(.semibold))
                     .foregroundStyle(tint)
+                    .frame(width: 24, height: 24)
                 Text(title)
-                    .font(.caption2.weight(.medium))
+                    .font(.callout)
                     .foregroundStyle(.primary)
+                Spacer(minLength: 0)
             }
-            .frame(minWidth: 52)
-            .padding(.horizontal, 4)
-            .padding(.vertical, 4)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 11)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
