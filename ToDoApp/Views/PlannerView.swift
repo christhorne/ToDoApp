@@ -17,7 +17,6 @@ struct PlannerView: View {
     @FocusState private var focusedAddDay: Date?
     @State private var showCompleted = false
     @State private var dayExpansion: [Date: Bool] = [:]
-    @State private var weekFocusText: String = WeekFocus.current
     @State private var assigneeFilter: String? = nil
 
     private static let addRowTimeFormatStyle = Date.FormatStyle.dateTime.hour().minute()
@@ -186,15 +185,9 @@ struct PlannerView: View {
     @ViewBuilder
     private var weekContent: some View {
         Section {
-            TextField("What do you want to focus on this week?", text: $weekFocusText, axis: .vertical)
-                .font(.body)
-                .lineLimit(2...4)
-                .listRowInsets(rowInsets)
-                .onChange(of: weekFocusText) { _, newValue in
-                    WeekFocus.set(newValue, for: WeekFocus.currentWeekStart)
-                }
-        } header: {
-            plainHeader("Week's Focus")
+            WeekFocusBanner(scope: scope)
+                .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
+                .listRowSeparator(.hidden)
         }
 
         ForEach(Array(visibleDays.enumerated()), id: \.element) { index, day in
@@ -267,17 +260,17 @@ struct PlannerView: View {
             HStack(spacing: 8) {
                 if isToday {
                     Text(CalendarHelper.longDateWithOrdinal(day))
-                        .fontWeight(.semibold)
+                        .fontWeight(.bold)
                         .foregroundStyle(scope.color)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 3)
-                        .background(scope.color.opacity(0.15), in: Capsule())
                 } else {
                     Text(Self.dayHeaderFormatter.string(from: day))
                         .fontWeight(.semibold)
                         .foregroundStyle(.primary)
                 }
                 Spacer()
+                if isToday {
+                    todayPill
+                }
                 if openCount > 0 {
                     countBadge(openCount)
                 }
@@ -305,6 +298,16 @@ struct PlannerView: View {
             .padding(.horizontal, 7)
             .padding(.vertical, 2)
             .background(.quaternary, in: Capsule())
+    }
+
+    private var todayPill: some View {
+        Text("Today")
+            .font(.caption2)
+            .fontWeight(.semibold)
+            .foregroundStyle(scope.color)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 2)
+            .background(scope.color.opacity(0.15), in: Capsule())
     }
 
     private func taskRow(_ item: TodoItem) -> some View {
