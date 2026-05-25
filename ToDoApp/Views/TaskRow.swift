@@ -9,6 +9,11 @@ struct TaskRow: View {
     @State private var expanded = false
     @State private var showingTimePicker = false
     @State private var timeDraft: Date = .now
+    @State private var showingMapSheet = false
+    @State private var showingListSheet = false
+    @State private var mapLabelDraft = ""
+    @State private var mapAddressDraft = ""
+    @State private var listItemsDraft: [ChecklistItem] = []
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {
         let f = RelativeDateTimeFormatter()
@@ -98,10 +103,50 @@ struct TaskRow: View {
                     }
                 }
             }
+            Section("Attach") {
+                if hasMap {
+                    Button { openMapSheet() } label: {
+                        Label("Edit map…", systemImage: "mappin.circle")
+                    }
+                    Button(role: .destructive) { item.attachment = nil } label: {
+                        Label("Remove map", systemImage: "mappin.slash")
+                    }
+                } else if hasList {
+                    Button { openListSheet() } label: {
+                        Label("Edit list…", systemImage: "checklist")
+                    }
+                    Button(role: .destructive) { item.attachment = nil } label: {
+                        Label("Remove list", systemImage: "xmark.circle")
+                    }
+                } else {
+                    Button { openMapSheet() } label: {
+                        Label("Attach map…", systemImage: "mappin.circle")
+                    }
+                    Button { openListSheet() } label: {
+                        Label("Attach list…", systemImage: "checklist")
+                    }
+                }
+            }
         }
         .sheet(isPresented: $showingTimePicker) {
             timePickerSheet
         }
+        .sheet(isPresented: $showingMapSheet) {
+            mapSheet
+        }
+        .sheet(isPresented: $showingListSheet) {
+            listSheet
+        }
+    }
+
+    private var hasMap: Bool {
+        if case .map = item.attachment { return true }
+        return false
+    }
+
+    private var hasList: Bool {
+        if case .list = item.attachment { return true }
+        return false
     }
 
     @ViewBuilder
@@ -361,5 +406,110 @@ struct TaskRow: View {
             updated[index].done.toggle()
             item.attachment = .list(items: updated)
         }
+    }
+
+    // MARK: - Attachment sheets
+
+    private var mapSheet: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Label (e.g. Arthur's School)", text: $mapLabelDraft)
+                    TextField("Address", text: $mapAddressDraft, axis: .vertical)
+                        .lineLimit(2...4)
+                } footer: {
+                    Text("Tapping the pin on this task will open the address in Apple Maps.")
+                }
+            }
+            .navigationTitle(hasMap ? "Edit Map" : "Attach Map")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { showingMapSheet = false }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { saveMap() }
+                        .disabled(mapAddressDraft.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private var listSheet: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach($listItemsDraft) { $entry in
+                        HStack(spacing: 10) {
+                            TextField("Item", text: $entry.text)
+                            Button {
+                                listItemsDraft.removeAll { $0.id == entry.id }
+                            } label: {
+                                Image(systemName: "minus.circle.fill")
+                                    .foregroundStyle(.red)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Remove item")
+                        }
+                    }
+                    Button {
+                        listItemsDraft.append(ChecklistItem(text: ""))
+                    } label: {
+                        Label("Add item", systemImage: "plus.circle.fill")
+                    }
+                }
+            }
+            .navigationTitle(hasList ? "Edit Checklist" : "Attach Checklist")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { showingListSheet = false }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { saveList() }
+                        .disabled(listItemsDraft.allSatisfy {
+                            $0.text.trimmingCharacters(in: .whitespaces).isEmpty
+                        })
+                }
+            }
+        }
+    }
+
+    private func openMapSheet() {
+        if case .map(let label, let address) = item.attachment {
+            mapLabelDraft = label
+            mapAddressDraft = address
+        } else {
+            mapLabelDraft = ""
+            mapAddressDraft = ""
+        }
+        showingMapSheet = true
+    }
+
+    private func openListSheet() {
+        if case .list(let items) = item.attachment {
+            listItemsDraft = items
+        } else {
+            listItemsDraft = [ChecklistItem(text: "")]
+        }
+        showingListSheet = true
+    }
+
+    private func saveMap() {
+        let address = mapAddressDraft.trimmingCharacters(in: .whitespaces)
+        let label = mapLabelDraft.trimmingCharacters(in: .whitespaces)
+        item.attachment = .map(label: label.isEmpty ? "Location" : label, address: address)
+        showingMapSheet = false
+    }
+
+    private func saveList() {
+        let filtered: [ChecklistItem] = listItemsDraft.compactMap { entry in
+            let trimmed = entry.text.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty else { return nil }
+            return ChecklistItem(id: entry.id, text: trimmed, done: entry.done)
+        }
+        item.attachment = filtered.isEmpty ? nil : .list(items: filtered)
+        showingListSheet = false
     }
 }
