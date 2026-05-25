@@ -313,6 +313,7 @@ struct PlannerView: View {
     private func taskRow(_ item: TodoItem) -> some View {
         TaskRow(item: item)
             .listRowInsets(rowInsets)
+            .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
             .swipeActions(edge: .leading) {
                 Button {
                     reschedulingItem = item
