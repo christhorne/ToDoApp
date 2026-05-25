@@ -4,7 +4,9 @@ import SwiftData
 struct TaskRow: View {
     @Bindable var item: TodoItem
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.openURL) private var openURL
 
+    @State private var expanded = false
     @State private var showingTimePicker = false
     @State private var timeDraft: Date = .now
 
@@ -18,33 +20,42 @@ struct TaskRow: View {
     private static let timeFormatStyle = Date.FormatStyle.dateTime.hour().minute()
 
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
-            Button {
-                toggleComplete()
-            } label: {
-                Image(systemName: item.isComplete ? "checkmark.square.fill" : "square")
-                    .font(.title2)
-                    .foregroundStyle(item.isComplete ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .center, spacing: 10) {
+                Button {
+                    toggleComplete()
+                } label: {
+                    Image(systemName: item.isComplete ? "checkmark.square.fill" : "square")
+                        .font(.title2)
+                        .foregroundStyle(item.isComplete ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
 
-            if item.recurrenceRuleId != nil {
-                Image(systemName: "arrow.triangle.2.circlepath")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .accessibilityLabel("Repeats")
-            }
-
-            VStack(alignment: .leading, spacing: 1) {
-                titleView
-                if let completedAt = item.completedAt {
-                    Text("Done \(Self.relativeFormatter.localizedString(for: completedAt, relativeTo: .now))")
+                if item.recurrenceRuleId != nil {
+                    Image(systemName: "arrow.triangle.2.circlepath")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
+                        .accessibilityLabel("Repeats")
                 }
+
+                VStack(alignment: .leading, spacing: 1) {
+                    titleView
+                    if let completedAt = item.completedAt {
+                        Text("Done \(Self.relativeFormatter.localizedString(for: completedAt, relativeTo: .now))")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Spacer(minLength: 0)
+
+                attachmentBadge
             }
-            Spacer(minLength: 0)
+
+            if case .list(let items) = item.attachment, expanded {
+                checklist(items: items)
+            }
         }
         .contextMenu {
             Button {
@@ -74,14 +85,62 @@ struct TaskRow: View {
         }
     }
 
+    // MARK: - Attachment badge (trailing)
+
+    @ViewBuilder
+    private var attachmentBadge: some View {
+        switch item.attachment {
+        case .map(let label, let address):
+            Button {
+                openMap(address: address)
+            } label: {
+                Label(label, systemImage: "mappin.circle.fill")
+                    .labelStyle(.iconOnly)
+                    .font(.title3)
+                    .foregroundStyle(.tint)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Open \(label) in Maps")
+
+        case .list(let items):
+            Button {
+                withAnimation(.snappy) { expanded.toggle() }
+            } label: {
+                HStack(spacing: 4) {
+                    Text("\(items.filter(\.done).count)/\(items.count)")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.tertiary)
+                        .rotationEffect(.degrees(expanded ? 90 : 0))
+                }
+                .padding(.horizontal, 7)
+                .padding(.vertical, 2)
+                .background(.quaternary, in: Capsule())
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("\(items.filter(\.done).count) of \(items.count) checked")
+            .accessibilityHint(expanded ? "Collapse list" : "Expand list")
+
+        case .none:
+            EmptyView()
+        }
+    }
+
+    // MARK: - Title rendering
+
     @ViewBuilder
     private var titleView: some View {
         if item.isComplete {
             timedTitle(strikethrough: true)
                 .foregroundStyle(.secondary)
         } else if item.time != nil {
-            // Time prefix is decorative; not editable inline. Show it adjacent
-            // to the editable title so users still see the chip clearly.
             HStack(spacing: 6) {
                 Text(item.time!, format: Self.timeFormatStyle)
                     .font(.caption.weight(.semibold))
@@ -115,6 +174,8 @@ struct TaskRow: View {
         }
     }
 
+    // MARK: - Time picker sheet
+
     private var timePickerSheet: some View {
         NavigationStack {
             VStack {
@@ -146,7 +207,6 @@ struct TaskRow: View {
     }
 
     private func defaultTimeDraft() -> Date {
-        // Round 'now' up to the next quarter hour as a friendly starting point.
         let calendar = Calendar.current
         let now = Date.now
         let minute = calendar.component(.minute, from: now)
@@ -159,10 +219,39 @@ struct TaskRow: View {
         ) ?? now
     }
 
+    // MARK: - Inline checklist
+
+    private func checklist(items: [ChecklistItem]) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(items) { entry in
+                Button {
+                    toggle(entry, in: items)
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: entry.done ? "checkmark.square.fill" : "square")
+                            .font(.body)
+                            .foregroundStyle(entry.done ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                        Text(entry.text)
+                            .font(.subheadline)
+                            .strikethrough(entry.done)
+                            .foregroundStyle(entry.done ? .secondary : .primary)
+                        Spacer(minLength: 0)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.leading, 34)
+        .padding(.top, 2)
+        .transition(.opacity.combined(with: .move(edge: .top)))
+    }
+
+    // MARK: - Actions
+
     private func toggleComplete() {
         withAnimation {
             if !item.isComplete {
-                // about to mark complete — materialize next instance if recurring
                 if let ruleId = item.recurrenceRuleId,
                    let rule = fetchRule(id: ruleId) {
                     let nextDay = rule.nextDate(after: item.day)
@@ -200,8 +289,6 @@ struct TaskRow: View {
             rule = newRule
         }
         item.recurrenceRuleId = rule.id
-        // First time we mark a task recurring, it becomes its own family root.
-        // TodoItem has no UUID, so we mint one to link future instances back.
         if item.recurrenceParentId == nil {
             item.recurrenceParentId = UUID()
         }
@@ -215,5 +302,20 @@ struct TaskRow: View {
     private func fetchRule(id: UUID) -> RecurrenceRule? {
         let descriptor = FetchDescriptor<RecurrenceRule>(predicate: #Predicate { $0.id == id })
         return try? modelContext.fetch(descriptor).first
+    }
+
+    private func openMap(address: String) {
+        let encoded = address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        guard let url = URL(string: "http://maps.apple.com/?address=\(encoded)") else { return }
+        openURL(url)
+    }
+
+    private func toggle(_ entry: ChecklistItem, in items: [ChecklistItem]) {
+        var updated = items
+        guard let index = updated.firstIndex(where: { $0.id == entry.id }) else { return }
+        withAnimation(.snappy) {
+            updated[index].done.toggle()
+            item.attachment = .list(items: updated)
+        }
     }
 }
