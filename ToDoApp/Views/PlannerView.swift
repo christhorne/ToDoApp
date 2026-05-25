@@ -15,6 +15,7 @@ struct PlannerView: View {
     @FocusState private var focusedAddDay: Date?
     @State private var showCompleted = false
     @State private var dayExpansion: [Date: Bool] = [:]
+    @State private var weekFocusText: String = WeekFocus.current
 
     private let rowInsets = EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16)
     private let dayHeaderInsets = EdgeInsets(top: 16, leading: 16, bottom: 6, trailing: 16)
@@ -146,6 +147,18 @@ struct PlannerView: View {
 
     @ViewBuilder
     private var weekContent: some View {
+        Section {
+            TextField("What do you want to focus on this week?", text: $weekFocusText, axis: .vertical)
+                .font(.body)
+                .lineLimit(2...4)
+                .listRowInsets(rowInsets)
+                .onChange(of: weekFocusText) { _, newValue in
+                    WeekFocus.set(newValue, for: WeekFocus.currentWeekStart)
+                }
+        } header: {
+            plainHeader("Week's Focus")
+        }
+
         ForEach(Array(visibleDays.enumerated()), id: \.element) { index, day in
             dayHeaderRow(day)
                 .listRowInsets(dayHeaderInsets)

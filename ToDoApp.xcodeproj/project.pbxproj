@@ -27,11 +27,13 @@
 		990D1DF5D041CB63B3173AD2 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E547680E27C6AEB4C31437 /* SettingsView.swift */; };
 		9ED3ECA0C63C86B3436E39B9 /* ModelContainer+Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CEE1C47C5432B91C474E30 /* ModelContainer+Shared.swift */; };
 		A9B0DF162A9796EA7C6A6B47 /* TaskScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B7463D7A8199BD05F4CD513 /* TaskScope.swift */; };
+		AC28E7BB19D22A5C10E4E45E /* WeekFocus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 507C6DC7BBD5D9ECA7E9CAD9 /* WeekFocus.swift */; };
 		BE6FDFDE3B913A239F163AF0 /* ToDoAppWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B538B038291DE230E4D0AC9 /* ToDoAppWidgetBundle.swift */; };
 		C9CE3A92053990A37055A7EA /* FridgeWidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD02AF1AC6F16853E90D0E81 /* FridgeWidgetProvider.swift */; };
 		D1C9C063B4C1D9D8B460B0F8 /* SharedAppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1137D8FE07FE0F7419351E78 /* SharedAppGroup.swift */; };
 		E0E0254AFE5B707F29BCBDEE /* PlannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4D7A677E98DA962174F56D /* PlannerView.swift */; };
 		EFDBA73AC519929BAA639683 /* TodoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E621D2F5DA713C77F5729DD2 /* TodoItem.swift */; };
+		FEA115CBB701280C53BE8037 /* WeekFocus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 507C6DC7BBD5D9ECA7E9CAD9 /* WeekFocus.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,6 +71,7 @@
 		317451B1B109F75D0984C702 /* ToDoApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ToDoApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B7463D7A8199BD05F4CD513 /* TaskScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskScope.swift; sourceTree = "<group>"; };
 		483276A9EEE0DEF613B13CEF /* FridgeWidgetEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FridgeWidgetEntry.swift; sourceTree = "<group>"; };
+		507C6DC7BBD5D9ECA7E9CAD9 /* WeekFocus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekFocus.swift; sourceTree = "<group>"; };
 		64E547680E27C6AEB4C31437 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6C4D7A677E98DA962174F56D /* PlannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannerView.swift; sourceTree = "<group>"; };
 		888526FD9C99D628D33D6462 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -125,6 +128,7 @@
 				11F328C19BC4ED217D2447D4 /* CalendarHelper.swift */,
 				3B7463D7A8199BD05F4CD513 /* TaskScope.swift */,
 				E621D2F5DA713C77F5729DD2 /* TodoItem.swift */,
+				507C6DC7BBD5D9ECA7E9CAD9 /* WeekFocus.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -276,6 +280,7 @@
 				A9B0DF162A9796EA7C6A6B47 /* TaskScope.swift in Sources */,
 				BE6FDFDE3B913A239F163AF0 /* ToDoAppWidgetBundle.swift in Sources */,
 				82EA982DD2E0C34A87EDC2D4 /* TodoItem.swift in Sources */,
+				AC28E7BB19D22A5C10E4E45E /* WeekFocus.swift in Sources */,
 				8ED8FC204BE12F21A5CDAC1F /* WidgetStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -297,6 +302,7 @@
 				5BA5A856DB6BBCBF66398860 /* TaskScope.swift in Sources */,
 				1811CA283A3A1DECB3D3E05F /* ToDoAppApp.swift in Sources */,
 				EFDBA73AC519929BAA639683 /* TodoItem.swift in Sources */,
+				FEA115CBB701280C53BE8037 /* WeekFocus.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
