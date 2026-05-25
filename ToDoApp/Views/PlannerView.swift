@@ -12,10 +12,14 @@ struct PlannerView: View {
     @State private var showingSettings = false
     @State private var reschedulingItem: TodoItem?
     @State private var drafts: [Date: String] = [:]
+    @State private var draftTimes: [Date: Date] = [:]
+    @State private var timePickerDay: Date?
     @FocusState private var focusedAddDay: Date?
     @State private var showCompleted = false
     @State private var dayExpansion: [Date: Bool] = [:]
     @State private var weekFocusText: String = WeekFocus.current
+
+    private static let addRowTimeFormatStyle = Date.FormatStyle.dateTime.hour().minute()
 
     private let rowInsets = EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16)
     private let dayHeaderInsets = EdgeInsets(top: 16, leading: 16, bottom: 6, trailing: 16)
@@ -291,11 +295,89 @@ struct PlannerView: View {
                 .focused($focusedAddDay, equals: day)
                 .submitLabel(.return)
                 .onSubmit { commitDraft(for: day) }
+            timeAttachButton(for: day)
             Spacer(minLength: 0)
         }
         .listRowInsets(rowInsets)
         .contentShape(Rectangle())
         .onTapGesture { focusedAddDay = day }
+    }
+
+    @ViewBuilder
+    private func timeAttachButton(for day: Date) -> some View {
+        Button {
+            timePickerDay = day
+        } label: {
+            if let draftTime = draftTimes[day] {
+                Text(draftTime, format: Self.addRowTimeFormatStyle)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(scope.color)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(scope.color.opacity(0.15), in: Capsule())
+            } else {
+                Image(systemName: "clock")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(draftTimes[day] == nil ? "Add time" : "Change time")
+        .popover(isPresented: timePopoverBinding(for: day)) {
+            timePickerPopover(for: day)
+        }
+    }
+
+    private func timePopoverBinding(for day: Date) -> Binding<Bool> {
+        Binding(
+            get: { timePickerDay == day },
+            set: { isPresented in
+                if !isPresented, timePickerDay == day {
+                    timePickerDay = nil
+                }
+            }
+        )
+    }
+
+    @ViewBuilder
+    private func timePickerPopover(for day: Date) -> some View {
+        let binding = Binding(
+            get: { draftTimes[day] ?? defaultDraftTime() },
+            set: { draftTimes[day] = $0 }
+        )
+        VStack(spacing: 12) {
+            DatePicker(
+                "Time",
+                selection: binding,
+                displayedComponents: .hourAndMinute
+            )
+            .datePickerStyle(.wheel)
+            .labelsHidden()
+            if draftTimes[day] != nil {
+                Button(role: .destructive) {
+                    draftTimes[day] = nil
+                    timePickerDay = nil
+                } label: {
+                    Label("Clear time", systemImage: "xmark.circle")
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding()
+        .presentationCompactAdaptation(.popover)
+    }
+
+    private func defaultDraftTime() -> Date {
+        let calendar = Calendar.current
+        let now = Date.now
+        let minute = calendar.component(.minute, from: now)
+        let bumpedMinute = ((minute / 15) + 1) * 15
+        return calendar.date(
+            bySettingHour: calendar.component(.hour, from: now),
+            minute: bumpedMinute % 60,
+            second: 0,
+            of: bumpedMinute >= 60 ? now.addingTimeInterval(3600) : now
+        ) ?? now
     }
 
     private func plainHeader(_ text: String) -> some View {
@@ -330,8 +412,18 @@ struct PlannerView: View {
 
     private func openItems(on day: Date) -> [TodoItem] {
         let calendar = Calendar.current
-        return allItems.filter {
+        let filtered = allItems.filter {
             $0.completedAt == nil && calendar.isDate($0.day, inSameDayAs: day)
+        }
+        // Timed tasks float to the top (earliest first), then untimed tasks
+        // keep their existing manual sort order.
+        return filtered.sorted { lhs, rhs in
+            switch (lhs.time, rhs.time) {
+            case let (l?, r?): return l < r
+            case (.some, .none): return true
+            case (.none, .some): return false
+            case (.none, .none): return lhs.sortOrder < rhs.sortOrder
+            }
         }
     }
 
@@ -349,10 +441,14 @@ struct PlannerView: View {
             return
         }
         let nextOrder = (openItems(on: day).map(\.sortOrder).max() ?? -1) + 1
+        let attachedTime = draftTimes[day]
         withAnimation {
-            modelContext.insert(TodoItem(title: text, day: day, sortOrder: nextOrder))
+            modelContext.insert(
+                TodoItem(title: text, day: day, sortOrder: nextOrder, time: attachedTime)
+            )
         }
         drafts[day] = ""
+        draftTimes[day] = nil
         // Re-assert focus after submit resigns it — Return adds and keeps going.
         DispatchQueue.main.async { focusedAddDay = day }
     }
