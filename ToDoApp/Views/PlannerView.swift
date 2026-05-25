@@ -337,6 +337,7 @@ struct PlannerView: View {
             Spacer(minLength: 0)
         }
         .listRowInsets(rowInsets)
+        .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
         .contentShape(Rectangle())
         .onTapGesture { focusedAddDay = day }
     }
