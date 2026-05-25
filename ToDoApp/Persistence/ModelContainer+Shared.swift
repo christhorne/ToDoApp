@@ -3,7 +3,7 @@ import SwiftData
 
 enum AppModelContainer {
     static let shared: ModelContainer = {
-        let schema = Schema([TodoItem.self])
+        let schema = Schema([TodoItem.self, RecurrenceRule.self])
         let config = makeConfiguration(schema: schema)
         do {
             return try ModelContainer(for: schema, configurations: [config])
