@@ -6,7 +6,9 @@ enum AppModelContainer {
         let schema = Schema([TodoItem.self])
         let config = makeConfiguration(schema: schema)
         do {
-            return try ModelContainer(for: schema, configurations: [config])
+            let container = try ModelContainer(for: schema, configurations: [config])
+            DemoSeeder.seedIfNeeded(container: container)
+            return container
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
