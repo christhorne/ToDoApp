@@ -50,6 +50,9 @@ struct TaskRow: View {
 
                 Spacer(minLength: 0)
 
+                assigneeChip
+                    .onTapGesture { cycleAssignee() }
+
                 attachmentBadge
             }
 
@@ -79,9 +82,50 @@ struct TaskRow: View {
                     Button("Don't repeat", role: .destructive) { clearRecurrence() }
                 }
             }
+            Section("Assign") {
+                ForEach(Assignee.all) { assignee in
+                    Button {
+                        item.assigneeId = assignee.id
+                    } label: {
+                        Label("Assign to \(assignee.displayName)", systemImage: "person.crop.circle")
+                    }
+                }
+                if item.assigneeId != nil {
+                    Button(role: .destructive) {
+                        item.assigneeId = nil
+                    } label: {
+                        Label("Unassign", systemImage: "person.crop.circle.badge.xmark")
+                    }
+                }
+            }
         }
         .sheet(isPresented: $showingTimePicker) {
             timePickerSheet
+        }
+    }
+
+    @ViewBuilder
+    private var assigneeChip: some View {
+        if let assignee = Assignee.find(id: item.assigneeId) {
+            Text(assignee.initial)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(width: 24, height: 24)
+                .background(assignee.color, in: Circle())
+                .accessibilityLabel("Assigned to \(assignee.displayName)")
+        } else {
+            Circle()
+                .strokeBorder(Color.secondary.opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [2.5, 2.5]))
+                .frame(width: 24, height: 24)
+                .accessibilityLabel("Unassigned")
+        }
+    }
+
+    private func cycleAssignee() {
+        switch item.assigneeId {
+        case nil: item.assigneeId = Assignee.alex.id
+        case Assignee.alex.id: item.assigneeId = Assignee.sam.id
+        default: item.assigneeId = nil
         }
     }
 

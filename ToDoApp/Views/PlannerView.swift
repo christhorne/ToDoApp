@@ -18,6 +18,7 @@ struct PlannerView: View {
     @State private var showCompleted = false
     @State private var dayExpansion: [Date: Bool] = [:]
     @State private var weekFocusText: String = WeekFocus.current
+    @State private var assigneeFilter: String? = nil
 
     private static let addRowTimeFormatStyle = Date.FormatStyle.dateTime.hour().minute()
 
@@ -60,16 +61,25 @@ struct PlannerView: View {
 
     private var overdueItems: [TodoItem] {
         let today = CalendarHelper.today
-        return allItems.filter { $0.completedAt == nil && $0.day < today }
+        return allItems.filter {
+            $0.completedAt == nil
+                && $0.day < today
+                && matchesAssigneeFilter($0)
+        }
     }
 
     private var completedItems: [TodoItem] {
         allItems
             .filter { item in
                 guard let completedAt = item.completedAt else { return false }
-                return scope.includesCompletion(at: completedAt)
+                return scope.includesCompletion(at: completedAt) && matchesAssigneeFilter(item)
             }
             .sorted { ($0.completedAt ?? .distantPast) > ($1.completedAt ?? .distantPast) }
+    }
+
+    private func matchesAssigneeFilter(_ item: TodoItem) -> Bool {
+        guard let assigneeFilter else { return true }
+        return item.assigneeId == assigneeFilter
     }
 
     private var navigationTitleText: String {
@@ -99,6 +109,9 @@ struct PlannerView: View {
             .navigationTitle(navigationTitleText)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
+                    assigneeFilterMenu
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showingSettings = true
                     } label: {
@@ -121,6 +134,27 @@ struct PlannerView: View {
             }
         }
         .tint(scope.color)
+    }
+
+    // MARK: - Assignee filter
+
+    private var activeAssignee: Assignee? {
+        Assignee.find(id: assigneeFilter)
+    }
+
+    private var assigneeFilterMenu: some View {
+        Menu {
+            Picker("Assignee", selection: $assigneeFilter) {
+                Text("All").tag(String?.none)
+                ForEach(Assignee.all) { assignee in
+                    Text(assignee.displayName).tag(String?.some(assignee.id))
+                }
+            }
+        } label: {
+            Image(systemName: assigneeFilter == nil ? "person.2.fill" : "person.fill.badge.checkmark")
+                .foregroundStyle(activeAssignee?.color ?? Color.secondary)
+        }
+        .accessibilityLabel(activeAssignee.map { "Filter: \($0.displayName)" } ?? "Filter by assignee")
     }
 
     // MARK: - Today
@@ -413,7 +447,9 @@ struct PlannerView: View {
     private func openItems(on day: Date) -> [TodoItem] {
         let calendar = Calendar.current
         let filtered = allItems.filter {
-            $0.completedAt == nil && calendar.isDate($0.day, inSameDayAs: day)
+            $0.completedAt == nil
+                && calendar.isDate($0.day, inSameDayAs: day)
+                && matchesAssigneeFilter($0)
         }
         // Timed tasks float to the top (earliest first), then untimed tasks
         // keep their existing manual sort order.
