@@ -15,6 +15,12 @@ struct TaskRow: View {
     @State private var mapAddressDraft = ""
     @State private var listItemsDraft: [ChecklistItem] = []
 
+    // Long-press action bar
+    @State private var showingActions = false
+    @State private var showingRepeatDialog = false
+    @State private var showingAssignDialog = false
+    @State private var showingAttachDialog = false
+
     private static let relativeFormatter: RelativeDateTimeFormatter = {
         let f = RelativeDateTimeFormatter()
         f.unitsStyle = .abbreviated
@@ -25,6 +31,66 @@ struct TaskRow: View {
     private static let timeFormatStyle = Date.FormatStyle.dateTime.hour().minute()
 
     var body: some View {
+        ZStack(alignment: .leading) {
+            rowContent
+                .opacity(showingActions ? 0.15 : 1)
+                .allowsHitTesting(!showingActions)
+                .contentShape(Rectangle())
+                .highPriorityGesture(longPressToReveal)
+                .onTapGesture {
+                    if showingActions { dismissActions() }
+                }
+
+            if showingActions {
+                actionBar
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .leading).combined(with: .opacity),
+                        removal: .opacity
+                    ))
+            }
+        }
+        .sheet(isPresented: $showingTimePicker) {
+            timePickerSheet
+        }
+        .sheet(isPresented: $showingMapSheet) {
+            mapSheet
+        }
+        .sheet(isPresented: $showingListSheet) {
+            listSheet
+        }
+        .confirmationDialog("Repeat", isPresented: $showingRepeatDialog, titleVisibility: .visible) {
+            Button("Daily") { setRecurrence(kind: .daily, intervalDays: 1) }
+            Button("Weekly") { setRecurrence(kind: .weekly, intervalDays: 7) }
+            Button("Every 3 days") { setRecurrence(kind: .everyN, intervalDays: 3) }
+            if item.recurrenceRuleId != nil {
+                Button("Don't repeat", role: .destructive) { clearRecurrence() }
+            }
+        }
+        .confirmationDialog("Assign", isPresented: $showingAssignDialog, titleVisibility: .visible) {
+            ForEach(Assignee.all) { assignee in
+                Button("Assign to \(assignee.displayName)") { item.assigneeId = assignee.id }
+            }
+            if item.assigneeId != nil {
+                Button("Unassign", role: .destructive) { item.assigneeId = nil }
+            }
+        }
+        .confirmationDialog("Attach", isPresented: $showingAttachDialog, titleVisibility: .visible) {
+            if hasMap {
+                Button("Edit map…") { openMapSheet() }
+                Button("Remove map", role: .destructive) { item.attachment = nil }
+            } else if hasList {
+                Button("Edit list…") { openListSheet() }
+                Button("Remove list", role: .destructive) { item.attachment = nil }
+            } else {
+                Button("Attach map…") { openMapSheet() }
+                Button("Attach list…") { openListSheet() }
+            }
+        }
+    }
+
+    // MARK: - Row content
+
+    private var rowContent: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .center, spacing: 10) {
                 Button {
@@ -65,78 +131,78 @@ struct TaskRow: View {
                 checklist(items: items)
             }
         }
-        .contextMenu {
-            Button {
-                timeDraft = item.time ?? defaultTimeDraft()
-                showingTimePicker = true
-            } label: {
-                Label(item.time == nil ? "Set time…" : "Change time…", systemImage: "clock")
-            }
-            if item.time != nil {
-                Button(role: .destructive) {
-                    item.time = nil
-                } label: {
-                    Label("Clear time", systemImage: "clock.badge.xmark")
-                }
-            }
-            Section("Repeat") {
-                Button("Daily") { setRecurrence(kind: .daily, intervalDays: 1) }
-                Button("Weekly") { setRecurrence(kind: .weekly, intervalDays: 7) }
-                Button("Every 3 days") { setRecurrence(kind: .everyN, intervalDays: 3) }
-                if item.recurrenceRuleId != nil {
-                    Button("Don't repeat", role: .destructive) { clearRecurrence() }
-                }
-            }
-            Section("Assign") {
-                ForEach(Assignee.all) { assignee in
-                    Button {
-                        item.assigneeId = assignee.id
-                    } label: {
-                        Label("Assign to \(assignee.displayName)", systemImage: "person.crop.circle")
-                    }
-                }
-                if item.assigneeId != nil {
-                    Button(role: .destructive) {
-                        item.assigneeId = nil
-                    } label: {
-                        Label("Unassign", systemImage: "person.crop.circle.badge.xmark")
-                    }
-                }
-            }
-            Section("Attach") {
-                if hasMap {
-                    Button { openMapSheet() } label: {
-                        Label("Edit map…", systemImage: "mappin.circle")
-                    }
-                    Button(role: .destructive) { item.attachment = nil } label: {
-                        Label("Remove map", systemImage: "mappin.slash")
-                    }
-                } else if hasList {
-                    Button { openListSheet() } label: {
-                        Label("Edit list…", systemImage: "checklist")
-                    }
-                    Button(role: .destructive) { item.attachment = nil } label: {
-                        Label("Remove list", systemImage: "xmark.circle")
-                    }
-                } else {
-                    Button { openMapSheet() } label: {
-                        Label("Attach map…", systemImage: "mappin.circle")
-                    }
-                    Button { openListSheet() } label: {
-                        Label("Attach list…", systemImage: "checklist")
-                    }
-                }
+    }
+
+    // MARK: - Long-press action bar
+
+    private var longPressToReveal: some Gesture {
+        LongPressGesture(minimumDuration: 0.35).onEnded { _ in
+            guard !showingActions else { return }
+            UISelectionFeedbackGenerator().selectionChanged()
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
+                showingActions = true
             }
         }
-        .sheet(isPresented: $showingTimePicker) {
-            timePickerSheet
+    }
+
+    private func dismissActions(then: (() -> Void)? = nil) {
+        withAnimation(.easeOut(duration: 0.18)) {
+            showingActions = false
         }
-        .sheet(isPresented: $showingMapSheet) {
-            mapSheet
+        if let then {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: then)
         }
-        .sheet(isPresented: $showingListSheet) {
-            listSheet
+    }
+
+    private var actionBar: some View {
+        HStack(spacing: 4) {
+            actionButton(title: "Time", systemImage: "clock", tint: .orange) {
+                dismissActions {
+                    timeDraft = item.time ?? defaultTimeDraft()
+                    showingTimePicker = true
+                }
+            }
+            actionButton(title: "Repeat", systemImage: "arrow.triangle.2.circlepath", tint: .blue) {
+                dismissActions { showingRepeatDialog = true }
+            }
+            actionButton(title: "Assign", systemImage: "person.crop.circle", tint: .purple) {
+                dismissActions { showingAssignDialog = true }
+            }
+            actionButton(title: "Attach", systemImage: "paperclip", tint: .green) {
+                dismissActions { showingAttachDialog = true }
+            }
         }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.08))
+        }
+        .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 3)
+    }
+
+    private func actionButton(
+        title: String,
+        systemImage: String,
+        tint: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(spacing: 3) {
+                Image(systemName: systemImage)
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(tint)
+                Text(title)
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(.primary)
+            }
+            .frame(minWidth: 52)
+            .padding(.horizontal, 4)
+            .padding(.vertical, 4)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private var hasMap: Bool {
