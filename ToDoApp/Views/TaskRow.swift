@@ -31,26 +31,26 @@ struct TaskRow: View {
     private static let timeFormatStyle = Date.FormatStyle.dateTime.hour().minute()
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            rowContent
-                .opacity(showingActions ? 0.2 : 1)
-                .allowsHitTesting(!showingActions)
-                .contentShape(Rectangle())
-                .highPriorityGesture(longPressToReveal)
-                .onTapGesture {
-                    if showingActions { dismissActions() }
-                }
-
-            if showingActions {
-                actionBar
-                    .padding(.vertical, 2)
-                    .transition(
-                        .scale(scale: 0.97, anchor: .topLeading)
-                            .combined(with: .opacity)
-                    )
+        rowContent
+            .opacity(showingActions ? 0.2 : 1)
+            .allowsHitTesting(!showingActions)
+            .contentShape(Rectangle())
+            .highPriorityGesture(longPressToReveal)
+            .onTapGesture {
+                if showingActions { dismissActions() }
             }
-        }
-        .animation(.easeOut(duration: 0.22), value: showingActions)
+            .overlay(alignment: .topTrailing) {
+                if showingActions {
+                    actionBar
+                        .padding(.vertical, 2)
+                        .transition(
+                            .scale(scale: 0.95, anchor: .topTrailing)
+                                .combined(with: .opacity)
+                        )
+                        .zIndex(1)
+                }
+            }
+            .animation(.easeOut(duration: 0.22), value: showingActions)
         .sheet(isPresented: $showingTimePicker) {
             timePickerSheet
         }
@@ -226,16 +226,15 @@ struct TaskRow: View {
     @ViewBuilder
     private var assigneeChip: some View {
         if let assignee = Assignee.find(id: item.assigneeId) {
-            Text(assignee.initial)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.white)
-                .frame(width: 24, height: 24)
-                .background(assignee.color, in: Circle())
+            Image(systemName: "person.crop.circle.fill")
+                .font(.system(size: 26))
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.white, assignee.color)
                 .accessibilityLabel("Assigned to \(assignee.displayName)")
         } else {
-            Circle()
-                .strokeBorder(Color.secondary.opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [2.5, 2.5]))
-                .frame(width: 24, height: 24)
+            Image(systemName: "person.crop.circle")
+                .font(.system(size: 26))
+                .foregroundStyle(.tertiary)
                 .accessibilityLabel("Unassigned")
         }
     }
@@ -326,8 +325,10 @@ struct TaskRow: View {
             HStack(spacing: 6) {
                 Text(time, format: Self.timeFormatStyle)
                     .font(.caption.weight(.semibold))
+                    .strikethrough(strikethrough)
                 Text("·")
                     .font(.caption)
+                    .strikethrough(strikethrough)
                 Text(item.title)
                     .strikethrough(strikethrough)
             }

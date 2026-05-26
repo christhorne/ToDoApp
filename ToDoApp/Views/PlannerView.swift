@@ -12,14 +12,11 @@ struct PlannerView: View {
     @State private var showingSettings = false
     @State private var reschedulingItem: TodoItem?
     @State private var drafts: [Date: String] = [:]
-    @State private var draftTimes: [Date: Date] = [:]
-    @State private var timePickerDay: Date?
     @FocusState private var focusedAddDay: Date?
     @State private var showCompleted = false
     @State private var dayExpansion: [Date: Bool] = [:]
     @State private var assigneeFilter: String? = nil
 
-    private static let addRowTimeFormatStyle = Date.FormatStyle.dateTime.hour().minute()
 
     private let rowInsets = EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16)
     private let dayHeaderInsets = EdgeInsets(top: 16, leading: 16, bottom: 6, trailing: 16)
@@ -333,90 +330,12 @@ struct PlannerView: View {
                 .focused($focusedAddDay, equals: day)
                 .submitLabel(.return)
                 .onSubmit { commitDraft(for: day) }
-            timeAttachButton(for: day)
             Spacer(minLength: 0)
         }
         .listRowInsets(rowInsets)
         .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
         .contentShape(Rectangle())
         .onTapGesture { focusedAddDay = day }
-    }
-
-    @ViewBuilder
-    private func timeAttachButton(for day: Date) -> some View {
-        Button {
-            timePickerDay = day
-        } label: {
-            if let draftTime = draftTimes[day] {
-                Text(draftTime, format: Self.addRowTimeFormatStyle)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(scope.color)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(scope.color.opacity(0.15), in: Capsule())
-            } else {
-                Image(systemName: "clock")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(draftTimes[day] == nil ? "Add time" : "Change time")
-        .popover(isPresented: timePopoverBinding(for: day)) {
-            timePickerPopover(for: day)
-        }
-    }
-
-    private func timePopoverBinding(for day: Date) -> Binding<Bool> {
-        Binding(
-            get: { timePickerDay == day },
-            set: { isPresented in
-                if !isPresented, timePickerDay == day {
-                    timePickerDay = nil
-                }
-            }
-        )
-    }
-
-    @ViewBuilder
-    private func timePickerPopover(for day: Date) -> some View {
-        let binding = Binding(
-            get: { draftTimes[day] ?? defaultDraftTime() },
-            set: { draftTimes[day] = $0 }
-        )
-        VStack(spacing: 12) {
-            DatePicker(
-                "Time",
-                selection: binding,
-                displayedComponents: .hourAndMinute
-            )
-            .datePickerStyle(.wheel)
-            .labelsHidden()
-            if draftTimes[day] != nil {
-                Button(role: .destructive) {
-                    draftTimes[day] = nil
-                    timePickerDay = nil
-                } label: {
-                    Label("Clear time", systemImage: "xmark.circle")
-                }
-                .buttonStyle(.bordered)
-            }
-        }
-        .padding()
-        .presentationCompactAdaptation(.popover)
-    }
-
-    private func defaultDraftTime() -> Date {
-        let calendar = Calendar.current
-        let now = Date.now
-        let minute = calendar.component(.minute, from: now)
-        let bumpedMinute = ((minute / 15) + 1) * 15
-        return calendar.date(
-            bySettingHour: calendar.component(.hour, from: now),
-            minute: bumpedMinute % 60,
-            second: 0,
-            of: bumpedMinute >= 60 ? now.addingTimeInterval(3600) : now
-        ) ?? now
     }
 
     private func plainHeader(_ text: String) -> some View {
@@ -476,22 +395,83 @@ struct PlannerView: View {
     }
 
     private func commitDraft(for day: Date) {
-        let text = (drafts[day] ?? "").trimmingCharacters(in: .whitespaces)
-        guard !text.isEmpty else {
+        let raw = (drafts[day] ?? "").trimmingCharacters(in: .whitespaces)
+        guard !raw.isEmpty else {
+            focusedAddDay = nil
+            return
+        }
+        let (title, time) = parseTime(from: raw, on: day)
+        guard !title.isEmpty else {
             focusedAddDay = nil
             return
         }
         let nextOrder = (openItems(on: day).map(\.sortOrder).max() ?? -1) + 1
-        let attachedTime = draftTimes[day]
         withAnimation {
             modelContext.insert(
-                TodoItem(title: text, day: day, sortOrder: nextOrder, time: attachedTime)
+                TodoItem(title: title, day: day, sortOrder: nextOrder, time: time)
             )
         }
         drafts[day] = ""
-        draftTimes[day] = nil
         // Re-assert focus after submit resigns it — Return adds and keeps going.
         DispatchQueue.main.async { focusedAddDay = day }
+    }
+
+    /// Look for a time expression in the user's typed task text. Patterns we
+    /// recognize: "3pm", "9:30am", "at 5", "@ 7:15PM". The matched range is
+    /// removed from the title and the time is anchored to `day` so sorting
+    /// inside the day is stable.
+    private func parseTime(from input: String, on day: Date) -> (title: String, time: Date?) {
+        let ampmPattern = #/\b(\d{1,2})(?::(\d{2}))?\s*([aApP][mM])\b/#
+        if let match = input.firstMatch(of: ampmPattern) {
+            let hour = Int(match.1) ?? 0
+            let minute = match.2.flatMap { Int($0) } ?? 0
+            let ampm = String(match.3).lowercased()
+            var adjusted = hour
+            if ampm.hasPrefix("p"), hour < 12 { adjusted += 12 }
+            if ampm.hasPrefix("a"), hour == 12 { adjusted = 0 }
+            let time = Calendar.current.date(
+                bySettingHour: adjusted, minute: minute, second: 0, of: day
+            )
+            var stripped = input
+            stripped.removeSubrange(match.range)
+            return (cleanupTitle(stripped), time)
+        }
+
+        if let detector = try? NSDataDetector(
+            types: NSTextCheckingResult.CheckingType.date.rawValue
+        ) {
+            let nsRange = NSRange(input.startIndex..., in: input)
+            if let match = detector.matches(in: input, options: [], range: nsRange).first,
+               let date = match.date,
+               let swiftRange = Range(match.range, in: input) {
+                let calendar = Calendar.current
+                let hour = calendar.component(.hour, from: date)
+                let minute = calendar.component(.minute, from: date)
+                let time = calendar.date(
+                    bySettingHour: hour, minute: minute, second: 0, of: day
+                ) ?? date
+                var stripped = input
+                stripped.removeSubrange(swiftRange)
+                return (cleanupTitle(stripped), time)
+            }
+        }
+
+        return (input.trimmingCharacters(in: .whitespaces), nil)
+    }
+
+    /// Tidy up a title after stripping a time match: drop trailing "at"/"@"
+    /// and collapse double spaces.
+    private func cleanupTitle(_ input: String) -> String {
+        var s = input.trimmingCharacters(in: .whitespaces)
+        for sfx in [" at", " @"] {
+            if s.lowercased().hasSuffix(sfx) {
+                s = String(s.dropLast(sfx.count)).trimmingCharacters(in: .whitespaces)
+            }
+        }
+        while s.contains("  ") {
+            s = s.replacingOccurrences(of: "  ", with: " ")
+        }
+        return s
     }
 
     private func moveItems(on day: Date, from source: IndexSet, to destination: Int) {
