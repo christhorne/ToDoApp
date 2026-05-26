@@ -313,7 +313,6 @@ struct PlannerView: View {
         TaskRow(item: item, activeActionItem: $activeActionItem)
             .listRowInsets(rowInsets)
             .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
-            .zIndex(activeActionItem === item ? 100 : 0)
             .swipeActions(edge: .leading) {
                 Button {
                     reschedulingItem = item
