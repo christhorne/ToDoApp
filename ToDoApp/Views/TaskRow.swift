@@ -176,7 +176,7 @@ struct TaskRow: View {
                 dismissActions { showingAttachDialog = true }
             }
         }
-        .frame(width: 200, alignment: .leading)
+        .frame(width: 140, alignment: .leading)
     }
 
     private var divider: some View {
