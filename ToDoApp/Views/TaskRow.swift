@@ -4,10 +4,10 @@ import SwiftData
 struct TaskRow: View {
     @Bindable var item: TodoItem
     @Binding var activeActionItem: TodoItem?
+    @Binding var isExpanded: Bool
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openURL) private var openURL
 
-    @State private var expanded = false
     @State private var showingTimePicker = false
     @State private var timeDraft: Date = .now
     @State private var showingMapSheet = false
@@ -95,44 +95,38 @@ struct TaskRow: View {
     // MARK: - Row content
 
     private var rowContent: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .center, spacing: 10) {
-                Button {
-                    toggleComplete()
-                } label: {
-                    Image(systemName: item.isComplete ? "checkmark.square.fill" : "square")
-                        .font(.title2)
-                        .foregroundStyle(item.isComplete ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
+        HStack(alignment: .center, spacing: 10) {
+            Button {
+                toggleComplete()
+            } label: {
+                Image(systemName: item.isComplete ? "checkmark.square.fill" : "square")
+                    .font(.title2)
+                    .foregroundStyle(item.isComplete ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
 
-                if item.recurrenceRuleId != nil {
-                    Image(systemName: "arrow.triangle.2.circlepath")
+            if item.recurrenceRuleId != nil {
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel("Repeats")
+            }
+
+            VStack(alignment: .leading, spacing: 1) {
+                titleView
+                if let completedAt = item.completedAt {
+                    Text("Done \(Self.relativeFormatter.localizedString(for: completedAt, relativeTo: .now))")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
-                        .accessibilityLabel("Repeats")
                 }
-
-                VStack(alignment: .leading, spacing: 1) {
-                    titleView
-                    if let completedAt = item.completedAt {
-                        Text("Done \(Self.relativeFormatter.localizedString(for: completedAt, relativeTo: .now))")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                Spacer(minLength: 0)
-
-                assigneeChip
-
-                attachmentBadge
             }
 
-            if case .list(let items) = item.attachment, expanded {
-                checklist(items: items)
-            }
+            Spacer(minLength: 0)
+
+            assigneeChip
+
+            attachmentBadge
         }
     }
 
@@ -253,7 +247,7 @@ struct TaskRow: View {
 
         case .list(let items):
             Button {
-                withAnimation(.smooth(duration: 0.28)) { expanded.toggle() }
+                withAnimation(.easeInOut(duration: 0.22)) { isExpanded.toggle() }
             } label: {
                 HStack(spacing: 4) {
                     Text("\(items.filter(\.done).count)/\(items.count)")
@@ -265,7 +259,7 @@ struct TaskRow: View {
                         .font(.caption2)
                         .fontWeight(.semibold)
                         .foregroundStyle(.tertiary)
-                        .rotationEffect(.degrees(expanded ? 90 : 0))
+                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
                 }
                 .padding(.horizontal, 7)
                 .padding(.vertical, 2)
@@ -274,7 +268,7 @@ struct TaskRow: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("\(items.filter(\.done).count) of \(items.count) checked")
-            .accessibilityHint(expanded ? "Collapse list" : "Expand list")
+            .accessibilityHint(isExpanded ? "Collapse list" : "Expand list")
 
         case .none:
             EmptyView()
@@ -369,34 +363,6 @@ struct TaskRow: View {
         ) ?? now
     }
 
-    // MARK: - Inline checklist
-
-    private func checklist(items: [ChecklistItem]) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            ForEach(items) { entry in
-                Button {
-                    toggle(entry, in: items)
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: entry.done ? "checkmark.square.fill" : "square")
-                            .font(.body)
-                            .foregroundStyle(entry.done ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
-                        Text(entry.text)
-                            .font(.subheadline)
-                            .strikethrough(entry.done)
-                            .foregroundStyle(entry.done ? .secondary : .primary)
-                        Spacer(minLength: 0)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(.leading, 34)
-        .padding(.top, 2)
-        .transition(.opacity)
-    }
-
     // MARK: - Actions
 
     private func toggleComplete() {
@@ -458,15 +424,6 @@ struct TaskRow: View {
         let encoded = address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         guard let url = URL(string: "http://maps.apple.com/?address=\(encoded)") else { return }
         openURL(url)
-    }
-
-    private func toggle(_ entry: ChecklistItem, in items: [ChecklistItem]) {
-        var updated = items
-        guard let index = updated.firstIndex(where: { $0.id == entry.id }) else { return }
-        withAnimation(.snappy) {
-            updated[index].done.toggle()
-            item.attachment = .list(items: updated)
-        }
     }
 
     // MARK: - Attachment sheets
@@ -572,5 +529,61 @@ struct TaskRow: View {
         }
         item.attachment = filtered.isEmpty ? nil : .list(items: filtered)
         showingListSheet = false
+    }
+}
+
+/// Inline checklist rendered as its own List row below the task. Lives in a
+/// separate row so the task itself never changes height when expanding — only
+/// this row is inserted/removed. Each item fades in with a staggered delay
+/// based on its index, so on expand items appear top-to-bottom and on collapse
+/// they fade bottom-to-top.
+struct ChecklistRow: View {
+    @Bindable var item: TodoItem
+
+    var body: some View {
+        if case .list(let items) = item.attachment {
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, entry in
+                    itemButton(entry, in: items)
+                        .transition(
+                            .asymmetric(
+                                insertion: .opacity.animation(
+                                    .easeOut(duration: 0.18).delay(Double(index) * 0.05)
+                                ),
+                                removal: .opacity.animation(
+                                    .easeIn(duration: 0.14).delay(Double(items.count - 1 - index) * 0.05)
+                                )
+                            )
+                        )
+                }
+            }
+            .padding(.leading, 34)
+        }
+    }
+
+    private func itemButton(_ entry: ChecklistItem, in items: [ChecklistItem]) -> some View {
+        Button {
+            toggle(entry, in: items)
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: entry.done ? "checkmark.square.fill" : "square")
+                    .font(.body)
+                    .foregroundStyle(entry.done ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                Text(entry.text)
+                    .font(.subheadline)
+                    .strikethrough(entry.done)
+                    .foregroundStyle(entry.done ? .secondary : .primary)
+                Spacer(minLength: 0)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func toggle(_ entry: ChecklistItem, in items: [ChecklistItem]) {
+        var updated = items
+        guard let index = updated.firstIndex(where: { $0.id == entry.id }) else { return }
+        updated[index].done.toggle()
+        item.attachment = .list(items: updated)
     }
 }

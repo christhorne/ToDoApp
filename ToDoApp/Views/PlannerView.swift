@@ -17,6 +17,7 @@ struct PlannerView: View {
     @State private var dayExpansion: [Date: Bool] = [:]
     @State private var assigneeFilter: String? = nil
     @State private var activeActionItem: TodoItem?
+    @State private var expandedItemIDs: Set<PersistentIdentifier> = []
 
 
     private let rowInsets = EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16)
@@ -209,6 +210,13 @@ struct PlannerView: View {
             taskRow(item)
                 .listRowSeparator(scope == .daily && index == 0 ? .hidden : .automatic, edges: .top)
                 .moveDisabled(!isEditing)
+
+            if expandedItemIDs.contains(item.persistentModelID) {
+                ChecklistRow(item: item)
+                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
+                    .listRowSeparator(.hidden)
+                    .moveDisabled(true)
+            }
         }
         .onDelete { deleteItems(open, at: $0) }
         .onMove { moveItems(on: day, from: $0, to: $1) }
@@ -310,17 +318,30 @@ struct PlannerView: View {
     }
 
     private func taskRow(_ item: TodoItem) -> some View {
-        TaskRow(item: item, activeActionItem: $activeActionItem)
-            .listRowInsets(rowInsets)
-            .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
-            .swipeActions(edge: .leading) {
-                Button {
-                    reschedulingItem = item
-                } label: {
-                    Label("Move", systemImage: "calendar")
+        TaskRow(
+            item: item,
+            activeActionItem: $activeActionItem,
+            isExpanded: Binding(
+                get: { expandedItemIDs.contains(item.persistentModelID) },
+                set: { isExpanded in
+                    if isExpanded {
+                        expandedItemIDs.insert(item.persistentModelID)
+                    } else {
+                        expandedItemIDs.remove(item.persistentModelID)
+                    }
                 }
-                .tint(scope.color)
+            )
+        )
+        .listRowInsets(rowInsets)
+        .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
+        .swipeActions(edge: .leading) {
+            Button {
+                reschedulingItem = item
+            } label: {
+                Label("Move", systemImage: "calendar")
             }
+            .tint(scope.color)
+        }
     }
 
     private func addRow(for day: Date) -> some View {
