@@ -261,32 +261,15 @@ struct HomeView: View {
 
     @ViewBuilder
     private func assigneeChip(for assigneeId: String?) -> some View {
-        if let display = assigneeDisplay(assigneeId) {
-            Text(display.initial)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(.white)
-                .frame(width: 26, height: 26)
-                .background(display.color, in: .circle)
+        if let assignee = Assignee.find(id: assigneeId) {
+            Image(systemName: "person.crop.circle.fill")
+                .font(.system(size: 26))
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.white, assignee.color)
         } else {
-            Circle()
-                .fill(.quaternary)
-                .frame(width: 26, height: 26)
-                .overlay {
-                    Image(systemName: "person")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-        }
-    }
-
-    /// Fallback display for assignees. Mirrors Agent B's "alex"/"sam" mapping —
-    /// the merge agent will reconcile with the real `Assignee` model.
-    private func assigneeDisplay(_ id: String?) -> (initial: String, color: Color)? {
-        switch id {
-        case "alex": ("A", .blue)
-        case "sam": ("S", .purple)
-        default: nil
+            Image(systemName: "person.crop.circle")
+                .font(.system(size: 26))
+                .foregroundStyle(.tertiary)
         }
     }
 
