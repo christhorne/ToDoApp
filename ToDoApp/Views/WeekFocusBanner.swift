@@ -6,8 +6,16 @@ import SwiftUI
 struct WeekFocusBanner: View {
     let scope: TaskScope
 
-    @AppStorage(WeekFocus.currentWeekKey, store: WeekFocus.defaults)
-    private var focusText: String = ""
+    @AppStorage private var focusText: String
+
+    init(scope: TaskScope) {
+        self.scope = scope
+        _focusText = AppStorage(
+            wrappedValue: "",
+            WeekFocus.currentKey(scope: scope),
+            store: WeekFocus.defaults
+        )
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {

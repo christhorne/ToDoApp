@@ -253,7 +253,7 @@ struct TaskRow: View {
 
         case .list(let items):
             Button {
-                withAnimation(.snappy) { expanded.toggle() }
+                withAnimation(.smooth(duration: 0.28)) { expanded.toggle() }
             } label: {
                 HStack(spacing: 4) {
                     Text("\(items.filter(\.done).count)/\(items.count)")
