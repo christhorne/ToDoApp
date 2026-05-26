@@ -214,7 +214,8 @@ struct PlannerView: View {
             if expandedItemIDs.contains(item.persistentModelID) {
                 ChecklistRow(item: item)
                     .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
-                    .listRowSeparator(.hidden)
+                    .listRowSeparator(.hidden, edges: .top)
+                    .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
                     .moveDisabled(true)
             }
         }
