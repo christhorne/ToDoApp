@@ -47,7 +47,7 @@ struct TaskRow: View {
                         }
                     }
                 ),
-                attachmentAnchor: .rect(.bounds),
+                attachmentAnchor: .point(.topTrailing),
                 arrowEdge: .top
             ) {
                 actionBar
@@ -394,7 +394,7 @@ struct TaskRow: View {
         }
         .padding(.leading, 34)
         .padding(.top, 2)
-        .transition(.opacity.combined(with: .move(edge: .top)))
+        .transition(.opacity)
     }
 
     // MARK: - Actions
