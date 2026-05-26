@@ -3,6 +3,7 @@ import SwiftData
 
 struct TaskRow: View {
     @Bindable var item: TodoItem
+    @Binding var activeActionItem: TodoItem?
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openURL) private var openURL
 
@@ -15,11 +16,14 @@ struct TaskRow: View {
     @State private var mapAddressDraft = ""
     @State private var listItemsDraft: [ChecklistItem] = []
 
-    // Long-press action bar
-    @State private var showingActions = false
+    // Long-press action bar sub-dialogs
     @State private var showingRepeatDialog = false
     @State private var showingAssignDialog = false
     @State private var showingAttachDialog = false
+
+    private var showingActions: Bool {
+        activeActionItem === item
+    }
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {
         let f = RelativeDateTimeFormatter()
@@ -141,12 +145,14 @@ struct TaskRow: View {
         LongPressGesture(minimumDuration: 0.35).onEnded { _ in
             guard !showingActions else { return }
             UISelectionFeedbackGenerator().selectionChanged()
-            showingActions = true
+            activeActionItem = item
         }
     }
 
     private func dismissActions(then: (() -> Void)? = nil) {
-        showingActions = false
+        if activeActionItem === item {
+            activeActionItem = nil
+        }
         if let then {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.24, execute: then)
         }
@@ -226,15 +232,16 @@ struct TaskRow: View {
     @ViewBuilder
     private var assigneeChip: some View {
         if let assignee = Assignee.find(id: item.assigneeId) {
-            Image(systemName: "person.crop.circle.fill")
-                .font(.system(size: 26))
-                .symbolRenderingMode(.palette)
-                .foregroundStyle(.white, assignee.color)
+            Text(assignee.initial)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(width: 24, height: 24)
+                .background(assignee.color, in: Circle())
                 .accessibilityLabel("Assigned to \(assignee.displayName)")
         } else {
-            Image(systemName: "person.crop.circle")
-                .font(.system(size: 26))
-                .foregroundStyle(.tertiary)
+            Circle()
+                .strokeBorder(Color.secondary.opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [2.5, 2.5]))
+                .frame(width: 24, height: 24)
                 .accessibilityLabel("Unassigned")
         }
     }

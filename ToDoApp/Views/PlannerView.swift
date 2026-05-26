@@ -16,6 +16,7 @@ struct PlannerView: View {
     @State private var showCompleted = false
     @State private var dayExpansion: [Date: Bool] = [:]
     @State private var assigneeFilter: String? = nil
+    @State private var activeActionItem: TodoItem?
 
 
     private let rowInsets = EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16)
@@ -308,9 +309,10 @@ struct PlannerView: View {
     }
 
     private func taskRow(_ item: TodoItem) -> some View {
-        TaskRow(item: item)
+        TaskRow(item: item, activeActionItem: $activeActionItem)
             .listRowInsets(rowInsets)
             .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
+            .zIndex(activeActionItem === item ? 100 : 0)
             .swipeActions(edge: .leading) {
                 Button {
                     reschedulingItem = item

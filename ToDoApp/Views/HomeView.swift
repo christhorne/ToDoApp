@@ -107,20 +107,6 @@ struct HomeView: View {
                         .transition(.opacity)
                 }
             }
-            .confirmationDialog(
-                "Add a reaction",
-                isPresented: Binding(
-                    get: { reactingTo != nil },
-                    set: { if !$0 { reactingTo = nil } }
-                ),
-                titleVisibility: .visible,
-                presenting: reactingTo
-            ) { item in
-                ForEach(Self.reactionChoices, id: \.self) { emoji in
-                    Button(emoji) { addReaction(emoji, to: item) }
-                }
-                Button("Cancel", role: .cancel) { }
-            }
         }
         .tint(.indigo)
         .onAppear { maybeTriggerConfetti() }
@@ -257,19 +243,58 @@ struct HomeView: View {
         }
         .buttonStyle(.plain)
         .accessibilityHint("Add a reaction")
+        .popover(
+            isPresented: Binding(
+                get: { reactingTo === item },
+                set: { isPresented in
+                    if !isPresented, reactingTo === item {
+                        reactingTo = nil
+                    }
+                }
+            ),
+            attachmentAnchor: .point(.top),
+            arrowEdge: .bottom
+        ) {
+            reactionPicker(for: item)
+                .presentationCompactAdaptation(.popover)
+        }
+    }
+
+    private func reactionPicker(for item: TodoItem) -> some View {
+        HStack(spacing: 14) {
+            ForEach(Self.reactionChoices, id: \.self) { emoji in
+                Button {
+                    addReaction(emoji, to: item)
+                    reactingTo = nil
+                } label: {
+                    Text(emoji)
+                        .font(.title2)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
     }
 
     @ViewBuilder
     private func assigneeChip(for assigneeId: String?) -> some View {
         if let assignee = Assignee.find(id: assigneeId) {
-            Image(systemName: "person.crop.circle.fill")
-                .font(.system(size: 26))
-                .symbolRenderingMode(.palette)
-                .foregroundStyle(.white, assignee.color)
+            Text(assignee.initial)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(.white)
+                .frame(width: 26, height: 26)
+                .background(assignee.color, in: .circle)
         } else {
-            Image(systemName: "person.crop.circle")
-                .font(.system(size: 26))
-                .foregroundStyle(.tertiary)
+            Circle()
+                .fill(.quaternary)
+                .frame(width: 26, height: 26)
+                .overlay {
+                    Image(systemName: "person")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
         }
     }
 
