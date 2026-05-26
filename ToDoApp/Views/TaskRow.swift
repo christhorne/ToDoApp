@@ -36,25 +36,23 @@ struct TaskRow: View {
 
     var body: some View {
         rowContent
-            .opacity(showingActions ? 0.2 : 1)
-            .allowsHitTesting(!showingActions)
             .contentShape(Rectangle())
             .highPriorityGesture(longPressToReveal)
-            .onTapGesture {
-                if showingActions { dismissActions() }
+            .popover(
+                isPresented: Binding(
+                    get: { activeActionItem === item },
+                    set: { isPresented in
+                        if !isPresented, activeActionItem === item {
+                            activeActionItem = nil
+                        }
+                    }
+                ),
+                attachmentAnchor: .rect(.bounds),
+                arrowEdge: .top
+            ) {
+                actionBar
+                    .presentationCompactAdaptation(.popover)
             }
-            .overlay(alignment: .topTrailing) {
-                if showingActions {
-                    actionBar
-                        .padding(.vertical, 2)
-                        .transition(
-                            .scale(scale: 0.95, anchor: .topTrailing)
-                                .combined(with: .opacity)
-                        )
-                        .zIndex(1)
-                }
-            }
-            .animation(.easeOut(duration: 0.22), value: showingActions)
         .sheet(isPresented: $showingTimePicker) {
             timePickerSheet
         }
@@ -180,12 +178,6 @@ struct TaskRow: View {
             }
         }
         .frame(width: 200, alignment: .leading)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.08))
-        }
-        .shadow(color: .black.opacity(0.12), radius: 14, x: 0, y: 4)
     }
 
     private var divider: some View {

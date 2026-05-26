@@ -210,7 +210,6 @@ struct PlannerView: View {
                 .listRowSeparator(scope == .daily && index == 0 ? .hidden : .automatic, edges: .top)
         }
         .onDelete { deleteItems(open, at: $0) }
-        .onMove { moveItems(on: day, from: $0, to: $1) }
 
         if !isEditing {
             addRow(for: day)
@@ -474,14 +473,6 @@ struct PlannerView: View {
             s = s.replacingOccurrences(of: "  ", with: " ")
         }
         return s
-    }
-
-    private func moveItems(on day: Date, from source: IndexSet, to destination: Int) {
-        var items = openItems(on: day)
-        items.move(fromOffsets: source, toOffset: destination)
-        for (index, item) in items.enumerated() {
-            item.sortOrder = index
-        }
     }
 
     private func deleteItems(_ items: [TodoItem], at offsets: IndexSet) {
