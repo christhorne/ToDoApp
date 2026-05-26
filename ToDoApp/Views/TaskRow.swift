@@ -126,7 +126,6 @@ struct TaskRow: View {
                 Spacer(minLength: 0)
 
                 assigneeChip
-                    .onTapGesture { cycleAssignee() }
 
                 attachmentBadge
             }
@@ -230,20 +229,8 @@ struct TaskRow: View {
                 .frame(width: 24, height: 24)
                 .background(assignee.color, in: Circle())
                 .accessibilityLabel("Assigned to \(assignee.displayName)")
-        } else {
-            Circle()
-                .strokeBorder(Color.secondary.opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [2.5, 2.5]))
-                .frame(width: 24, height: 24)
-                .accessibilityLabel("Unassigned")
         }
-    }
-
-    private func cycleAssignee() {
-        switch item.assigneeId {
-        case nil: item.assigneeId = Assignee.alex.id
-        case Assignee.alex.id: item.assigneeId = Assignee.sam.id
-        default: item.assigneeId = nil
-        }
+        // Unassigned: nothing on the row. Assign via long-press menu only.
     }
 
     // MARK: - Attachment badge (trailing)
