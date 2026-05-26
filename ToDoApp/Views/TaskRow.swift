@@ -47,7 +47,7 @@ struct TaskRow: View {
                         }
                     }
                 ),
-                attachmentAnchor: .rect(.bounds),
+                attachmentAnchor: .point(UnitPoint(x: 0.85, y: 1)),
                 arrowEdge: .top
             ) {
                 actionBar
